@@ -15,8 +15,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22.x'
-          cache: 'npm'
-      - run: npm install
+      - run: npm install --no-package-lock --prefer-dedupe
       - run: npm test
 
   deploy:
@@ -29,8 +28,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22.x'
-          cache: 'npm'
-      - run: npm install
+      - run: npm install --no-package-lock --prefer-dedupe
       - name: Serverless Deploy
         run: npm run deploy
         env:
