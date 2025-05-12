@@ -43,6 +43,6 @@ jobs:
           node-version: '22.x'
           cache: 'npm'
       - name: 依存関係をインストール
-        run: npm ci
+        run: npm install
       - name: ビルドを実行
         run: npm run build
