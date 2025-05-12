@@ -26,8 +26,6 @@ jobs:
         run: npm run lint
       - name: テストを実行
         run: npm test
-      - name: カバレッジレポートを作成
-        run: npm run test:coverage
 
   build:
     needs: test
