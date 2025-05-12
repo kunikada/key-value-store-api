@@ -1,0 +1,22 @@
+# このファイルはGitHubのCODEOWNERS機能を使用しています。
+# 特定のパスやファイルに対して責任を持つユーザーやチームを定義します。
+# https://docs.github.com/ja/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# デフォルトの所有者（他に特定されていない場合）
+* @kunikada
+
+# テストファイル
+/tests/ @kunikada
+
+# インフラ関連ファイル
+serverless.yml @kunikada
+
+# APIハンドラー
+/src/handlers/ @kunikada
+
+# 設定ファイル
+*.config.js @kunikada
+*.config.ts @kunikada
+
+# GitHub Actionsワークフロー
+/.github/workflows/ @kunikada

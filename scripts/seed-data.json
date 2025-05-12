@@ -1,0 +1,52 @@
+[
+  {
+    "key": "welcome",
+    "value": "Key-Value Store APIへようこそ！",
+    "ttl": 0
+  },
+  {
+    "key": "sample-text",
+    "value": "これはサンプルテキストデータです。",
+    "ttl": 0
+  },
+  {
+    "key": "sample-json",
+    "value": "{\"name\":\"サンプルユーザー\",\"email\":\"sample@example.com\",\"age\":30}",
+    "ttl": 0
+  },
+  {
+    "key": "sample-code",
+    "value": "function helloWorld() {\n  console.log(\"Hello, World!\");\n}\n",
+    "ttl": 0
+  },
+  {
+    "key": "verification-code-sample",
+    "value": "123456",
+    "ttl": 0
+  },
+  {
+    "key": "temporary-data",
+    "value": "この一時データは2日後に自動的に削除されます",
+    "ttl": "$future_timestamp"
+  },
+  {
+    "key": "api-docs",
+    "value": "詳細なAPIドキュメントはhttp://example.com/docsで確認できます",
+    "ttl": 0
+  },
+  {
+    "key": "contact-info",
+    "value": "サポートが必要な場合は、support@example.comにお問い合わせください",
+    "ttl": 0
+  },
+  {
+    "key": "settings",
+    "value": "{\"theme\":\"dark\",\"notifications\":true,\"language\":\"ja\"}",
+    "ttl": 0
+  },
+  {
+    "key": "markdown-sample",
+    "value": "# マークダウンサンプル\n\n## 見出し2\n\n- リスト項目1\n- リスト項目2\n\n**太字** と *斜体* のテキスト\n",
+    "ttl": 0
+  }
+]

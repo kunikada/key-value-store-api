@@ -1,0 +1,16 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "ms-vscode.vscode-typescript-next",
+    "amazonwebservices.aws-toolkit-vscode",
+    "redhat.vscode-yaml",
+    "ms-azuretools.vscode-docker",
+    "mikestead.dotenv",
+    "vscode-icons-team.vscode-icons",
+    "github.copilot",
+    "github.copilot-chat",
+    "christian-kohler.path-intellisense",
+    "vitest.explorer"
+  ]
+}

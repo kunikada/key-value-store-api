@@ -1,0 +1,48 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Node.js ${{ matrix.node-version }}を使用
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - name: 依存関係をインストール
+        run: npm ci
+      - name: リントを実行
+        run: npm run lint
+      - name: テストを実行
+        run: npm test
+      - name: カバレッジレポートを作成
+        run: npm run test:coverage
+
+  build:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Node.js 22.xを使用
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+      - name: 依存関係をインストール
+        run: npm ci
+      - name: ビルドを実行
+        run: npm run build

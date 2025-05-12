@@ -1,0 +1,61 @@
+# 依存関係
+node_modules
+package-lock.json
+/.serverless
+/.dynamodb
+
+# ビルド出力
+.build/
+dist/
+lib/
+/build
+*.tsbuildinfo
+
+# 環境変数
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ログ
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# エディタ設定
+.idea
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.swp
+*.swo
+
+# OS生成ファイル
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# テスト関連
+/coverage
+/.nyc_output
+
+# AWS関連
+.aws/
+credentials
+.aws-sam/
+samconfig.toml
+
+# その他
+*.tgz
+.npm
+.eslintcache
+.cache

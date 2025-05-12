@@ -1,0 +1,140 @@
+openapi: 3.0.0
+info:
+  title: Key-Value Store API
+  description: A serverless REST API for a key-value store using AWS.
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/dev
+    description: 開発環境
+  - url: https://api.example.com/prod
+    description: 本番環境
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+    Item:
+      type: object
+      properties:
+        id:
+          type: string
+        value:
+          type: string
+security:
+  - ApiKeyAuth: []
+paths:
+  /item/{key}:
+    get:
+      summary: アイテムを取得する
+      description: 指定されたキーでアイテムを取得します
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: アイテムが見つかりません
+          content:
+            text/plain:
+              schema:
+                type: string
+    put:
+      summary: アイテムを保存する
+      description: 指定されたキーでアイテムを保存します
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-TTL-Seconds
+          in: header
+          required: false
+          schema:
+            type: integer
+            description: アイテムが自動的に削除されるまでの秒数
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: アイテムが正常に保存されました
+          content:
+            text/plain:
+              schema:
+                type: string
+    delete:
+      summary: アイテムを削除する
+      description: 指定されたキーでアイテムを削除します
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: アイテムが正常に削除されました
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: アイテムが見つかりません
+          content:
+            text/plain:
+              schema:
+                type: string
+  /extractCode/{key}:
+    post:
+      summary: テキストから数字コードを抽出して保存する
+      description: テキストメッセージから数字コード（少なくとも4桁）を抽出し、指定されたキーで保存します
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-TTL-Seconds
+          in: header
+          required: false
+          schema:
+            type: integer
+            description: アイテムが自動的に削除されるまでの秒数
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: コードが正常に抽出され保存されました
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: コードが見つかりませんでした
+          content:
+            text/plain:
+              schema:
+                type: string
