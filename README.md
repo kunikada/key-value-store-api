@@ -250,7 +250,7 @@ This service can be configured using the following environment variables (see `.
 | `DEFAULT_TTL`        | Default TTL in seconds     | `86400` (24 hours) |
 | `DYNAMODB_TABLE`     | DynamoDB table name        | `KeyValueStore`    |
 | `AWS_REGION`         | AWS region for deployment  | `ap-northeast-1`   |
-| `STAGE`              | Deployment stage           | `prod`             |
+| `STAGE`              | Deployment stage           | `v1.0.0`           |
 
 ## Deployment Stages
 
@@ -268,7 +268,7 @@ npm run deploy -- --stage dev
 npm run deploy -- --stage staging
 
 # Deploy to production stage (default)
-npm run deploy -- --stage prod
+npm run deploy -- --stage v1.0.0
 # or simply
 npm run deploy
 ```
@@ -282,18 +282,18 @@ You can also set the default stage by:
    provider:
      name: aws
      runtime: nodejs22.x
-     stage: ${env:STAGE, 'prod'}
+     stage: ${env:STAGE, 'v1.0.0'}
    ```
 
 2. Setting an environment variable:
    ```bash
-   export STAGE=prod
+   export STAGE=v1.0.0
    npm run deploy
    ```
 
 3. Adding it to your `.env` file:
    ```
-   STAGE=prod
+   STAGE=v1.0.0
    ```
 
 Each stage will create its own isolated resources in AWS, including separate API Gateway endpoints, Lambda functions, and DynamoDB tables.

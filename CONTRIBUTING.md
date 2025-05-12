@@ -362,4 +362,4 @@ We recommend using the following VS Code extensions for this project:
 
 ## CI/CD
 
-A CI pipeline using GitHub Actions is set up. Pushes to the master or main branch will automatically run tests and deployment.
+A CI pipeline using GitHub Actions is set up. Pushes to the master or main branch will automatically run tests to ensure code quality. Deployment is performed manually after tests have passed successfully.
