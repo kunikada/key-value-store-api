@@ -263,15 +263,16 @@ This service can be configured using the following environment variables (see `.
 
 | Environment Variable | Description                | Default Value      |
 | -------------------- | -------------------------- | ------------------ |
-| `TTL_ENABLED`        | Enable/disable TTL feature | `true`             |
 | `DEFAULT_TTL`        | Default TTL in seconds     | `86400` (24 hours) |
 | `DYNAMODB_TABLE`     | DynamoDB table name        | `KeyValueStore`    |
 | `AWS_REGION`         | AWS region for deployment  | `ap-northeast-1`   |
-| `STAGE`              | Deployment stage           | `v1`           |
+| `STAGE`              | Deployment stage           | `v1`               |
+
+The `STAGE` environment variable is particularly important as it determines which environment (development, staging, production) your service will be deployed to. Each stage creates a completely separate set of resources in AWS.
 
 ## Deployment Stages
 
-This service supports multiple deployment stages (environments) such as development, staging, and production. By default, the service will deploy to the `prod` stage.
+This service supports multiple deployment stages (environments) such as development, staging, and production. By default, the service will deploy to the `v1` stage.
 
 ### Switching Between Stages
 
@@ -313,7 +314,13 @@ You can also set the default stage by:
    STAGE=v1
    ```
 
-Each stage will create its own isolated resources in AWS, including separate API Gateway endpoints, Lambda functions, and DynamoDB tables.
+When multiple methods are used, the priority is as follows:
+1. Command line option (`--stage`) has the highest priority
+2. Environment variable set in the shell session
+3. Value in the `.env` file
+4. Default value in `serverless.yml`
+
+Each stage will create its own isolated resources in AWS, including separate API Gateway endpoints, Lambda functions, and DynamoDB tables. This isolation ensures that changes to one environment do not affect others.
 
 ### Updating a Deployment
 
@@ -351,7 +358,6 @@ This will delete all AWS resources created by the deployment, including Lambda f
 
 - `X-TTL-Seconds`: Time in seconds specified in HTTP header after which the item will be automatically deleted (optional)
 - If not specified, the value from the environment variable `DEFAULT_TTL` will be used (default is 24 hours)
-- To disable the TTL feature, set the environment variable `TTL_ENABLED` to `false`
 
 ## Contributing
 

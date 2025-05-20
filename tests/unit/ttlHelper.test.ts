@@ -25,30 +25,28 @@ describe('ttlHelper', () => {
   describe('getTTLConfig', () => {
     it('should return default values when environment variables are not set', () => {
       // 環境変数未設定の場合のテスト
-      delete process.env.TTL_ENABLED;
       delete process.env.DEFAULT_TTL;
 
       const config = getTTLConfig();
-      expect(config.enabled).toBe(true); // デフォルトで有効
+      expect(config.enabled).toBe(true); // 常に有効
       expect(config.defaultTTL).toBe(86400); // デフォルトは24時間（86400秒）
     });
 
-    it('should use environment variables when set', () => {
+    it('should use environment variables for DEFAULT_TTL when set', () => {
       // 環境変数設定時のテスト
-      process.env.TTL_ENABLED = 'false';
       process.env.DEFAULT_TTL = '3600';
 
       const config = getTTLConfig();
-      expect(config.enabled).toBe(false);
+      expect(config.enabled).toBe(true);
       expect(config.defaultTTL).toBe(3600);
     });
 
-    it('should handle invalid TTL_ENABLED values correctly', () => {
-      // 無効なTTL_ENABLED値のテスト
-      process.env.TTL_ENABLED = 'invalid';
+    it('should handle invalid DEFAULT_TTL values correctly', () => {
+      // 無効なDEFAULT_TTL値のテスト
+      process.env.DEFAULT_TTL = 'invalid';
 
       const config = getTTLConfig();
-      expect(config.enabled).toBe(true); // 'false'以外は全てtrueとみなす
+      expect(config.defaultTTL).toBe(86400); // 無効な値の場合はデフォルト値を使用
     });
 
     it('should handle invalid DEFAULT_TTL values correctly', () => {
