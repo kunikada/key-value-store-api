@@ -118,6 +118,27 @@ describe('Key-Value Store API - HTTP統合テスト', () => {
       expect(response.status).toBe(400);
       expect(response.data).toBe('No numeric code found in the text');
     });
+
+    it('指定した桁数のコードのみを抽出する', async () => {
+      const key = generateUniqueKey();
+      const testMessage = '4桁のコード: 1234, 5桁のコード: 12345, 6桁のコード: 123456';
+
+      // 4桁のコードだけを抽出するように指定
+      const response = await apiClient.post(`/extractCode/${key}`, testMessage, {
+        headers: {
+          'Content-Type': 'text/plain',
+          'X-Digits': '4',
+        },
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.data).toBe('Code extracted and stored successfully: 1234');
+
+      // 保存されたコードを取得して確認
+      const getResponse = await apiClient.get(`/item/${key}`);
+      expect(getResponse.status).toBe(200);
+      expect(String(getResponse.data)).toBe('1234');
+    });
   });
 
   describe('TTL機能', () => {

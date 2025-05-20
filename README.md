@@ -128,6 +128,13 @@ Content-Type: text/plain
 X-TTL-Seconds: 3600  // Optional: automatically delete after specified seconds (1 hour = 3600 seconds)
 ```
 
+URL Query Parameters (alternative to headers):
+```
+ttl=3600  // Optional: automatically delete after specified seconds
+```
+
+Note: When both header and query parameter are provided, the header takes precedence.
+
 Response: (Plain text)
 ```
 Item successfully saved
@@ -141,16 +148,32 @@ POST /extractCode/{key}
 
 Request body:
 ```
-<TEXT DATA CONTAINING NUMERIC CODE>
+<TEXT DATA CONTAINING CODE>
 ```
-
-This endpoint extracts numeric codes (at least 4 digits) from the provided text and stores the first match using the specified key. For example, if you send "Your verification code is 123456", it will extract and store "123456".
 
 HTTP Headers:
 ```
 Content-Type: text/plain
-X-TTL-Seconds: 3600  // Optional: automatically delete after specified seconds
+X-TTL-Seconds: 3600      // Optional: automatically delete after specified seconds
+X-Min-Digits: 4          // Optional: minimum number of digits in code (default: 4)
+X-Character-Type: numeric // Optional: character type - 'numeric' or 'alphanumeric' (default: numeric)
 ```
+
+URL Query Parameters (alternative to headers):
+```
+ttl=3600            // Optional: automatically delete after specified seconds
+minDigits=4           // Optional: minimum number of digits in code
+characterType=numeric // Optional: character type - 'numeric' or 'alphanumeric'
+```
+
+Note: When both headers and query parameters are provided, headers take precedence.
+
+This endpoint extracts codes from the provided text and stores the first match using the specified key.
+
+Examples:
+- With default settings (`X-Min-Digits: 4` and `X-Character-Type: numeric`), sending "Your verification code is 123456" will extract and store "123456"
+- With `X-Character-Type: alphanumeric`, sending "Your activation code is ABC123" will extract and store "ABC123"
+- Using query parameters: `POST /extractCode/myKey?minDigits=5&characterType=alphanumeric`
 
 Response: (Plain text)
 ```

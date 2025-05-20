@@ -153,6 +153,46 @@ describe('ttlHelper', () => {
       const ttl = getTTLFromHeaders(event);
       expect(ttl).toBeUndefined();
     });
+
+    it('should extract TTL from query parameter when header is not present', () => {
+      const event = {
+        headers: {},
+        queryStringParameters: {
+          ttl: '3600',
+        },
+      } as unknown as APIGatewayEvent;
+
+      const ttl = getTTLFromHeaders(event);
+      expect(ttl).toBe(3600);
+    });
+
+    it('should prioritize header over query parameter when both are present', () => {
+      const event = {
+        headers: {
+          'X-TTL-Seconds': '7200',
+        },
+        queryStringParameters: {
+          ttl: '3600',
+        },
+      } as unknown as APIGatewayEvent;
+
+      const ttl = getTTLFromHeaders(event);
+      expect(ttl).toBe(7200);
+    });
+
+    it('should return undefined when both header and query parameter are invalid', () => {
+      const event = {
+        headers: {
+          'X-TTL-Seconds': 'invalid',
+        },
+        queryStringParameters: {
+          ttl: 'also-invalid',
+        },
+      } as unknown as APIGatewayEvent;
+
+      const ttl = getTTLFromHeaders(event);
+      expect(ttl).toBeUndefined();
+    });
   });
 
   describe('isItemExpired', () => {
