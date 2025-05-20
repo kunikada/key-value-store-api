@@ -315,6 +315,38 @@ You can also set the default stage by:
 
 Each stage will create its own isolated resources in AWS, including separate API Gateway endpoints, Lambda functions, and DynamoDB tables.
 
+### Updating a Deployment
+
+To update an existing deployment after making code changes:
+
+```bash
+# Update the current deployment
+npm run deploy
+
+# Update a specific stage
+npm run deploy -- --stage dev
+```
+
+For smaller changes that only affect a single Lambda function, you can deploy just that function for faster updates:
+
+```bash
+npx serverless deploy function --function putItem
+```
+
+### Removing a Deployment
+
+To completely remove a deployed service from AWS:
+
+```bash
+# Remove the current deployment
+npx serverless remove
+
+# Remove a specific stage
+npx serverless remove --stage dev
+```
+
+This will delete all AWS resources created by the deployment, including Lambda functions, API Gateway endpoints, DynamoDB tables, and IAM roles.
+
 ## TTL Feature Details
 
 - `X-TTL-Seconds`: Time in seconds specified in HTTP header after which the item will be automatically deleted (optional)
