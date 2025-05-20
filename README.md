@@ -155,14 +155,8 @@ HTTP Headers:
 ```
 Content-Type: text/plain
 X-TTL-Seconds: 3600      // Optional: automatically delete after specified seconds
-X-Min-Digits: 4          // Optional: minimum number of digits in code (default: 4)
+X-Digits: 4              // Optional: minimum number of digits in code (default: 4)
 X-Character-Type: numeric // Optional: character type - 'numeric' or 'alphanumeric' (default: numeric)
-```
-
-URL Query Parameters (alternative to headers):
-```
-ttl=3600            // Optional: automatically delete after specified seconds
-minDigits=4           // Optional: minimum number of digits in code
 characterType=numeric // Optional: character type - 'numeric' or 'alphanumeric'
 ```
 
