@@ -128,6 +128,13 @@ Content-Type: text/plain
 X-TTL-Seconds: 3600  // Optional: automatically delete after specified seconds (1 hour = 3600 seconds)
 ```
 
+URL Query Parameters (alternative to headers):
+```
+ttl=3600  // Optional: automatically delete after specified seconds
+```
+
+Note: When both header and query parameter are provided, the header takes precedence.
+
 Response: (Plain text)
 ```
 Item successfully saved
@@ -141,16 +148,26 @@ POST /extractCode/{key}
 
 Request body:
 ```
-<TEXT DATA CONTAINING NUMERIC CODE>
+<TEXT DATA CONTAINING CODE>
 ```
-
-This endpoint extracts numeric codes (at least 4 digits) from the provided text and stores the first match using the specified key. For example, if you send "Your verification code is 123456", it will extract and store "123456".
 
 HTTP Headers:
 ```
 Content-Type: text/plain
-X-TTL-Seconds: 3600  // Optional: automatically delete after specified seconds
+X-TTL-Seconds: 3600      // Optional: automatically delete after specified seconds
+X-Digits: 4              // Optional: minimum number of digits in code (default: 4)
+X-Character-Type: numeric // Optional: character type - 'numeric' or 'alphanumeric' (default: numeric)
+characterType=numeric // Optional: character type - 'numeric' or 'alphanumeric'
 ```
+
+Note: When both headers and query parameters are provided, headers take precedence.
+
+This endpoint extracts codes from the provided text and stores the first match using the specified key.
+
+Examples:
+- With default settings (`X-Digits: 4` and `X-Character-Type: numeric`), sending "Your verification code is 123456" will extract and store "123456"
+- With `X-Character-Type: alphanumeric`, sending "Your activation code is ABC123" will extract and store "ABC123"
+- Using query parameters: `POST /extractCode/myKey?digits=5&characterType=alphanumeric`
 
 Response: (Plain text)
 ```
@@ -250,7 +267,7 @@ This service can be configured using the following environment variables (see `.
 | `DEFAULT_TTL`        | Default TTL in seconds     | `86400` (24 hours) |
 | `DYNAMODB_TABLE`     | DynamoDB table name        | `KeyValueStore`    |
 | `AWS_REGION`         | AWS region for deployment  | `ap-northeast-1`   |
-| `STAGE`              | Deployment stage           | `v1.0.0`           |
+| `STAGE`              | Deployment stage           | `v1`           |
 
 ## Deployment Stages
 
@@ -268,7 +285,7 @@ npm run deploy -- --stage dev
 npm run deploy -- --stage staging
 
 # Deploy to production stage (default)
-npm run deploy -- --stage v1.0.0
+npm run deploy -- --stage v1
 # or simply
 npm run deploy
 ```
@@ -282,18 +299,18 @@ You can also set the default stage by:
    provider:
      name: aws
      runtime: nodejs22.x
-     stage: ${env:STAGE, 'v1.0.0'}
+     stage: ${env:STAGE, 'v1'}
    ```
 
 2. Setting an environment variable:
    ```bash
-   export STAGE=v1.0.0
+   export STAGE=v1
    npm run deploy
    ```
 
 3. Adding it to your `.env` file:
    ```
-   STAGE=v1.0.0
+   STAGE=v1
    ```
 
 Each stage will create its own isolated resources in AWS, including separate API Gateway endpoints, Lambda functions, and DynamoDB tables.

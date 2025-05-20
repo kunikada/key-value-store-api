@@ -6,7 +6,7 @@ info:
 servers:
   - url: https://api.example.com/dev
     description: 開発環境
-  - url: https://api.example.com/v1.0.0
+  - url: https://api.example.com/v1
     description: 本番環境
 components:
   securitySchemes:
@@ -68,6 +68,12 @@ paths:
           schema:
             type: integer
             description: アイテムが自動的に削除されるまでの秒数
+        - name: ttl
+          in: query
+          required: false
+          schema:
+            type: integer
+            description: アイテムが自動的に削除されるまでの秒数（X-TTL-Secondsヘッダーが優先されます）
       requestBody:
         required: true
         content:
@@ -105,8 +111,8 @@ paths:
                 type: string
   /extractCode/{key}:
     post:
-      summary: テキストから数字コードを抽出して保存する
-      description: テキストメッセージから数字コード（少なくとも4桁）を抽出し、指定されたキーで保存します
+      summary: テキストからコードを抽出して保存する
+      description: テキストメッセージからコードを抽出し、指定されたキーで保存します
       parameters:
         - name: key
           in: path
@@ -119,6 +125,42 @@ paths:
           schema:
             type: integer
             description: アイテムが自動的に削除されるまでの秒数
+        - name: ttl
+          in: query
+          required: false
+          schema:
+            type: integer
+            description: アイテムが自動的に削除されるまでの秒数（X-TTL-Secondsヘッダーが優先されます）
+        - name: X-Digits
+          in: header
+          required: false
+          schema:
+            type: integer
+            default: 4
+            description: 抽出するコードの桁数
+        - name: X-Character-Type
+          in: header
+          required: false
+          schema:
+            type: string
+            enum: [numeric, alphanumeric]
+            default: numeric
+            description: 抽出するコードの文字種別（numeric=数字のみ、alphanumeric=英数字）
+        - name: digits
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 4
+            description: 抽出するコードの桁数（X-Digitsヘッダーが優先されます）
+        - name: characterType
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [numeric, alphanumeric]
+            default: numeric
+            description: 抽出するコードの文字種別（X-Character-Typeヘッダーが優先されます）
       requestBody:
         required: true
         content:

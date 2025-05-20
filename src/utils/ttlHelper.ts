@@ -32,10 +32,21 @@ export const calculateTTL = (seconds?: number): number => {
  * @returns TTL秒数またはundefined
  */
 export const getTTLFromHeaders = (event: APIGatewayEvent): number | undefined => {
-  const ttlHeader = event.headers?.['X-TTL-Seconds'] || event.headers?.['x-ttl-seconds'];
+  // ヘッダーからTTLを取得（優先）
+  const headers = event.headers || {};
+  const ttlHeader = headers['X-TTL-Seconds'] || headers['x-ttl-seconds'] || headers['x-ttl'];
 
   if (ttlHeader) {
     const ttlSeconds = parseInt(ttlHeader, 10);
+    if (!isNaN(ttlSeconds) && ttlSeconds > 0) {
+      return ttlSeconds;
+    }
+  }
+
+  // クエリパラメータからTTLを取得（ヘッダーがない場合）
+  const ttlQuery = event.queryStringParameters?.ttl;
+  if (ttlQuery) {
+    const ttlSeconds = parseInt(ttlQuery, 10);
     if (!isNaN(ttlSeconds) && ttlSeconds > 0) {
       return ttlSeconds;
     }
