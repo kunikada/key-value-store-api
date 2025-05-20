@@ -165,9 +165,9 @@ Note: When both headers and query parameters are provided, headers take preceden
 This endpoint extracts codes from the provided text and stores the first match using the specified key.
 
 Examples:
-- With default settings (`X-Min-Digits: 4` and `X-Character-Type: numeric`), sending "Your verification code is 123456" will extract and store "123456"
+- With default settings (`X-Digits: 4` and `X-Character-Type: numeric`), sending "Your verification code is 123456" will extract and store "123456"
 - With `X-Character-Type: alphanumeric`, sending "Your activation code is ABC123" will extract and store "ABC123"
-- Using query parameters: `POST /extractCode/myKey?minDigits=5&characterType=alphanumeric`
+- Using query parameters: `POST /extractCode/myKey?digits=5&characterType=alphanumeric`
 
 Response: (Plain text)
 ```
