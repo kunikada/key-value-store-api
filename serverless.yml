@@ -42,7 +42,6 @@ provider:
     apiKeys:
       - KeyValueStoreApiKey
   environment:
-    TTL_ENABLED: ${env:TTL_ENABLED, 'true'}
     DEFAULT_TTL: ${env:DEFAULT_TTL, '86400'}
     TABLE_NAME: ${env:TABLE_NAME, 'KeyValueStore'}
   iamRoleStatements:

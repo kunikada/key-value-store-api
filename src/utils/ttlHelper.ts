@@ -5,7 +5,7 @@ import { APIGatewayEvent } from 'aws-lambda';
 export const getTTLConfig = (): TTLConfig => {
   const ttlValue = process.env.DEFAULT_TTL ? parseInt(process.env.DEFAULT_TTL, 10) : 86400;
   return {
-    enabled: process.env.TTL_ENABLED?.toLowerCase() !== 'false', // デフォルトで有効
+    enabled: true, // TTLは常に有効
     defaultTTL: isNaN(ttlValue) ? 86400 : ttlValue, // デフォルトは24時間（86400秒）
   };
 };
@@ -61,14 +61,6 @@ export const getTTLFromHeaders = (event: APIGatewayEvent): number | undefined =>
  * @returns 期限切れの場合はtrue、そうでない場合はfalse
  */
 export const isItemExpired = (item: KeyValueItem): boolean => {
-  // TTL設定を取得
-  const config = getTTLConfig();
-
-  // TTLが無効化されている場合は常に期限切れではない
-  if (!config.enabled) {
-    return false;
-  }
-
   // アイテムにTTLが設定されていない場合は期限切れではない
   if (!item.ttl) {
     return false;
