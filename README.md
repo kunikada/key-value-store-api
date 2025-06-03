@@ -15,10 +15,10 @@ This project is a serverless REST API service that implements a Key-Value store 
 
 ## Technologies Used
 
-- Amazon API Gateway
+- Amazon API Gateway v2
 - AWS Lambda
 - Amazon DynamoDB
-- Serverless Framework
+- SST v3 (Serverless Stack)
 - TypeScript
 - Vitest for testing
 
@@ -32,7 +32,6 @@ To deploy and use this API, you need the following:
 - npm 10.x or higher
 - AWS Account
 - AWS CLI configured with appropriate credentials
-- Serverless Framework (`npm install -g serverless`)
 
 ### Installation
 
@@ -54,30 +53,44 @@ To deploy and use this API, you need the following:
    ```bash
    cp .env.example .env
    ```
-   
+
    Edit the `.env` file to customize settings as needed.
+
+### Development
+
+To run the service locally:
+
+```bash
+npm run dev
+```
+
+This will start the SST development environment, which will deploy your app to a development stage in AWS.
 
 ### Deployment
 
 To deploy this service to AWS:
 
-1. Configure AWS credentials for Serverless Framework (if not already done):
+1. Configure AWS credentials (if not already done):
 
    ```bash
    aws configure
    ```
 
-2. Deploy the service:
+2. Deploy with SST:
 
    ```bash
+   # Standard deployment
    npm run deploy
+   
+   # Deploy to specific stage
+   npm run deploy -- --stage prod
    ```
 
 3. Retrieve the API key:
    After deployment, run the following command to get the API key:
 
    ```bash
-   npx serverless info
+   npm run console
    ```
 
    Use the displayed API key to authenticate your requests.
@@ -86,19 +99,29 @@ For detailed information about setting up the development environment, running t
 
 ## API Usage
 
-### Authentication
+### 認証（API Key）
 
-All API endpoints require authentication using an API key. Include the API key in your HTTP requests using the `x-api-key` header:
+このAPIはAPI Key認証が有効です。API KeyはSST Secretとして管理され、Lambdaオーソライザーで検証されます。
 
-```
-x-api-key: your-api-key-here
-```
+#### API Keyのセット・取得
 
-You can retrieve your API key after deployment by running:
+1. Secretの登録（初回のみ）
 
-```bash
-npx serverless info
-```
+   ```bash
+   sst secret set ApiKey <your-api-key>
+   ```
+
+2. デプロイ
+
+   ```bash
+   npm run deploy
+   ```
+
+3. API Keyを使ったリクエスト例
+
+   ```bash
+   curl -H "x-api-key: <your-api-key>" https://<api-url>/item/testKey
+   ```
 
 ### Get Item
 
@@ -107,6 +130,7 @@ GET /item/{key}
 ```
 
 Response: (Plain text)
+
 ```
 your stored value
 ```
@@ -118,17 +142,20 @@ PUT /item/{key}
 ```
 
 Request body:
+
 ```
 <TEXT DATA>
 ```
 
 HTTP Headers:
+
 ```
 Content-Type: text/plain
 X-TTL-Seconds: 3600  // Optional: automatically delete after specified seconds (1 hour = 3600 seconds)
 ```
 
 URL Query Parameters (alternative to headers):
+
 ```
 ttl=3600  // Optional: automatically delete after specified seconds
 ```
@@ -136,6 +163,7 @@ ttl=3600  // Optional: automatically delete after specified seconds
 Note: When both header and query parameter are provided, the header takes precedence.
 
 Response: (Plain text)
+
 ```
 Item successfully saved
 ```
@@ -147,11 +175,13 @@ POST /extractCode/{key}
 ```
 
 Request body:
+
 ```
 <TEXT DATA CONTAINING CODE>
 ```
 
 HTTP Headers:
+
 ```
 Content-Type: text/plain
 X-TTL-Seconds: 3600      // Optional: automatically delete after specified seconds
@@ -165,11 +195,13 @@ Note: When both headers and query parameters are provided, headers take preceden
 This endpoint extracts codes from the provided text and stores the first match using the specified key.
 
 Examples:
+
 - With default settings (`X-Digits: 4` and `X-Character-Type: numeric`), sending "Your verification code is 123456" will extract and store "123456"
 - With `X-Character-Type: alphanumeric`, sending "Your activation code is ABC123" will extract and store "ABC123"
 - Using query parameters: `POST /extractCode/myKey?digits=5&characterType=alphanumeric`
 
 Response: (Plain text)
+
 ```
 Code extracted and stored successfully: 123456
 ```
@@ -181,13 +213,14 @@ DELETE /item/{key}
 ```
 
 Response: (Plain text)
+
 ```
 Item successfully deleted
 ```
 
 ## Custom Domain Setup
 
-You can set up a custom domain for your API using the Serverless Framework. This allows you to use a more friendly URL instead of the default API Gateway URL.
+You can set up a custom domain for your API using SST. This allows you to use a more friendly URL instead of the default API Gateway URL.
 
 ### Prerequisites
 
@@ -197,41 +230,25 @@ You can set up a custom domain for your API using the Serverless Framework. This
 
 ### Installation Steps
 
-1. Install the serverless-domain-manager plugin:
+1. Update your `stacks/ApiStack.ts` file to include domain configuration:
 
-   ```bash
-   npm install --save-dev serverless-domain-manager
+   ```typescript
+   // Import DomainName from aws-cdk-lib
+   import { aws_apigateway as apigateway } from 'aws-cdk-lib';
+
+   // In your ApiStack function
+   const api = new Api(stack, 'KeyValueStoreApi', {
+     customDomain: {
+       domainName: 'api.example.com',
+       hostedZone: 'example.com',
+       // or if you want to use an existing certificate:
+       // certificate: certificateArn
+     },
+     // ... other API configuration
+   });
    ```
 
-2. Add the plugin and custom domain configuration to your `serverless.yml`:
-
-   ```yaml
-   plugins:
-     - serverless-offline
-     - serverless-dynamodb-local
-     - serverless-domain-manager
-
-   custom:
-     # Existing custom configurations...
-     
-     customDomain:
-       domainName: api.example.com
-       basePath: '' # Leave empty for root path
-       stage: ${self:provider.stage}
-       createRoute53Record: true
-       endpointType: 'regional'
-       securityPolicy: tls_1_2
-       apiType: rest
-       autoDomain: true
-   ```
-
-3. Create the custom domain:
-
-   ```bash
-   npx serverless create-domain
-   ```
-
-4. Deploy your service:
+2. Deploy your service:
 
    ```bash
    npm run deploy
@@ -244,29 +261,29 @@ After deployment, your API will be available at the custom domain (e.g., `https:
 - **Regional**: Faster access within the same AWS region
 - **Edge-Optimized**: Better performance for geographically distributed clients
 
-Choose the appropriate `endpointType` based on your use case.
+You can configure this in your SST stack:
 
-### Path Mapping
-
-You can also configure path mappings to have multiple APIs under different paths of the same domain:
-
-```yaml
-custom:
-  customDomain:
-    domainName: api.example.com
-    basePath: 'store'  # This will make your API available at api.example.com/store
+```typescript
+const api = new Api(stack, 'KeyValueStoreApi', {
+  customDomain: {
+    domainName: 'api.example.com',
+    hostedZone: 'example.com',
+    endpointType: apigateway.EndpointType.EDGE, // or REGIONAL
+  },
+  // ... other configuration
+});
 ```
 
 ## Environment Variables
 
 This service can be configured using the following environment variables (see `.env.example` for reference):
 
-| Environment Variable | Description                | Default Value      |
-| -------------------- | -------------------------- | ------------------ |
-| `DEFAULT_TTL`        | Default TTL in seconds     | `86400` (24 hours) |
-| `DYNAMODB_TABLE`     | DynamoDB table name        | `KeyValueStore`    |
-| `AWS_REGION`         | AWS region for deployment  | `ap-northeast-1`   |
-| `STAGE`              | Deployment stage           | `v1`               |
+| Environment Variable | Description                    | Default Value      |
+| -------------------- | ------------------------------ | ------------------ |
+| `DEFAULT_TTL`        | Default TTL in seconds         | `86400` (24 hours) |
+| `TABLE_NAME`         | DynamoDB table name            | `KeyValueStore`    |
+| `AWS_REGION`         | AWS region for deployment      | `ap-northeast-1`   |
+| `STAGE`              | Deployment stage               | `dev`              |
 
 The `STAGE` environment variable is particularly important as it determines which environment (development, staging, production) your service will be deployed to. Each stage creates a completely separate set of resources in AWS.
 
@@ -282,43 +299,58 @@ You can deploy to a different stage by using the `--stage` option with the deplo
 # Deploy to development stage
 npm run deploy -- --stage dev
 
-# Deploy to staging stage
+# Deploy to staging stage  
 npm run deploy -- --stage staging
 
-# Deploy to production stage (default)
-npm run deploy -- --stage v1
-# or simply
-npm run deploy
+# Deploy to production stage
+npm run deploy -- --stage prod
+
+# Deploy with additional tags to development
+npm run deploy -- --stage dev
 ```
 
 ### Setting a Default Stage
 
 You can also set the default stage by:
 
-1. Adding the stage parameter in `serverless.yml`:
-   ```yaml
-   provider:
-     name: aws
-     runtime: nodejs22.x
-     stage: ${env:STAGE, 'v1'}
+1. Updating the stage in `sst.config.ts`:
+
+   ```typescript
+   export default $config({
+     app(input) {
+       return {
+         name: 'key-value-store-api',
+         removal: input?.stage === 'production' ? 'retain' : 'remove',
+         home: 'aws',
+         providers: {
+           aws: {
+             region: 'ap-northeast-1',
+           },
+         },
+       };
+     },
+     // ...
+   });
    ```
 
 2. Setting an environment variable:
+
    ```bash
-   export STAGE=v1
+   export STAGE=dev
    npm run deploy
    ```
 
 3. Adding it to your `.env` file:
    ```
-   STAGE=v1
+   STAGE=dev
    ```
 
 When multiple methods are used, the priority is as follows:
+
 1. Command line option (`--stage`) has the highest priority
 2. Environment variable set in the shell session
 3. Value in the `.env` file
-4. Default value in `serverless.yml`
+4. Default value in `sst.config.ts`
 
 Each stage will create its own isolated resources in AWS, including separate API Gateway endpoints, Lambda functions, and DynamoDB tables. This isolation ensures that changes to one environment do not affect others.
 
@@ -334,10 +366,10 @@ npm run deploy
 npm run deploy -- --stage dev
 ```
 
-For smaller changes that only affect a single Lambda function, you can deploy just that function for faster updates:
+For smaller changes that only affect a single Lambda function, you can use SST to deploy just that function for faster updates:
 
 ```bash
-npx serverless deploy function --function putItem
+npx sst deploy --function <functionName>
 ```
 
 ### Removing a Deployment
@@ -346,10 +378,10 @@ To completely remove a deployed service from AWS:
 
 ```bash
 # Remove the current deployment
-npx serverless remove
+npm run remove
 
 # Remove a specific stage
-npx serverless remove --stage dev
+npm run remove -- --stage dev
 ```
 
 This will delete all AWS resources created by the deployment, including Lambda functions, API Gateway endpoints, DynamoDB tables, and IAM roles.

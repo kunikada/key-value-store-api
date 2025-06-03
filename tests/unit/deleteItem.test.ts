@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { deleteItemHandler } from '../../src/handlers/deleteItem';
-import { KeyValueRepository } from '../../src/utils/dynamoDBClient';
-import { KeyValueItem } from '../../src/types';
-import { setRepository } from '../../src/utils/repositoryFactory';
+import { deleteItemHandler } from '@handlers/deleteItem';
+import { KeyValueRepository } from '@utils/dynamoDBClient';
+import { KeyValueItem } from '@types';
+import { setRepository } from '@utils/repositoryFactory';
 
 // テスト用のモックリポジトリクラス
 class MockRepository implements KeyValueRepository {

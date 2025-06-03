@@ -1,5 +1,5 @@
 import { APIGatewayEvent, Context, Callback } from 'aws-lambda';
-import { getRepository } from '@src/utils/repositoryFactory';
+import { getRepository } from '@utils/repositoryFactory.js';
 
 export const deleteItemHandler = async (
   event: APIGatewayEvent,

@@ -4,8 +4,12 @@ package-lock.json
 /.serverless
 /.dynamodb
 
-# ビルド出力
+# SST関連
+.sst/
+.open-next/
 .build/
+
+# ビルド出力
 dist/
 lib/
 /build

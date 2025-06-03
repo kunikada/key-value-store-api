@@ -1,8 +1,12 @@
 import { APIGatewayEvent, Context, Callback } from 'aws-lambda';
-import { getTTLFromHeaders, calculateTTL } from '@src/utils/ttlHelper';
-import { getRepository } from '@src/utils/repositoryFactory';
+import { getTTLFromHeaders, calculateTTL } from '@utils/ttlHelper';
+import { getRepository } from '@utils/repositoryFactory';
 
-export const putItemHandler = async (event: APIGatewayEvent, _context: Context, _callback: Callback) => {
+export const putItemHandler = async (
+  event: APIGatewayEvent,
+  _context: Context,
+  _callback: Callback
+) => {
   const key = event.pathParameters?.key;
 
   if (!key) {

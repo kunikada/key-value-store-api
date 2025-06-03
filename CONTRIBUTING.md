@@ -4,7 +4,33 @@ This document explains the local development environment setup and development w
 
 ## AWS Architecture
 
-This project implements a serverless architecture using multiple AWS services. The architecture diagram below illustrates how these services interact with each other.
+This project implements a serverless architecture using multiple AWS services. The architecture diagram below illustrates how these services interact with ## Deployment
+
+After testing your changes locally, to deploy to AWS:
+
+```bash
+# Standard deployment
+npm run deploy
+
+# Deploy to specific stage
+npm run deploy -- --stage staging
+
+# Deploy with additional tags to specific stage
+PROJECT_NAME=my-project OWNER=team-name npm run deploy -- --stage prod
+```
+
+The unified deployment script provides flexible deployment options. You can also use it directly:
+
+```bash
+# View all available options
+./scripts/deploy.sh --help
+
+# Examples of direct script usage
+./scripts/deploy.sh --with-tags --stage prod
+./scripts/deploy.sh --stage dev
+```
+
+This command uses SST to deploy your application. Make sure your AWS credentials are correctly configured before deploying.
 
 ### Architecture Diagram
 
@@ -15,14 +41,14 @@ graph TD
     APIG -->|Invoke| LambdaPut[Lambda: putItem]
     APIG -->|Invoke| LambdaDel[Lambda: deleteItem]
     APIG -->|Invoke| LambdaExt[Lambda: extractAndStoreCode]
-    
+
     LambdaGet -->|Read| DDB[(Amazon DynamoDB)]
     LambdaPut -->|Write| DDB
     LambdaDel -->|Delete| DDB
     LambdaExt -->|Extract & Write| DDB
-    
+
     DDB -->|Auto-delete expired items| TTL[TTL Mechanism]
-    
+
     subgraph "AWS Cloud"
         APIG
         subgraph "Lambda Functions"
@@ -34,14 +60,14 @@ graph TD
         DDB
         TTL
     end
-    
+
     subgraph "Development & Deployment"
-        SF[Serverless Framework] -->|Deploy| APIG
-        SF -->|Deploy| LambdaGet
-        SF -->|Deploy| LambdaPut
-        SF -->|Deploy| LambdaDel
-        SF -->|Deploy| LambdaExt
-        SF -->|Configure| DDB
+        SST[SST Framework] -->|Deploy| APIG
+        SST -->|Deploy| LambdaGet
+        SST -->|Deploy| LambdaPut
+        SST -->|Deploy| LambdaDel
+        SST -->|Deploy| LambdaExt
+        SST -->|Configure| DDB
     end
 ```
 
@@ -54,7 +80,7 @@ graph TD
   - `deleteItem`: Removes items from DynamoDB based on a key
   - `extractAndStoreCode`: Extracts numeric codes from text and stores them
 - **DynamoDB**: NoSQL database that stores the key-value pairs with automatic TTL capabilities
-- **Serverless Framework**: Used for infrastructure as code, simplifying the deployment process
+- **SST (Serverless Stack Toolkit)**: Used for infrastructure as code, simplifying the deployment process
 
 This architecture provides a highly scalable, cost-effective solution with minimal operational overhead as it leverages AWS's managed services and the serverless computing model.
 
@@ -69,12 +95,15 @@ key-value-store-api/
 ├── openapi.yaml            # OpenAPI specification
 ├── package.json            # Project dependencies and scripts
 ├── prettier.config.js      # Prettier configuration
-├── serverless.yml          # Serverless Framework configuration
+├── sst.config.ts           # SST configuration
+├── stacks/
+│   └── ApiStack.ts        # SST API stack definition
 ├── tsconfig.json           # TypeScript configuration
 ├── vitest.config.ts        # Vitest configuration
 ├── vitest.setup.ts         # Vitest setup file
 ├── scripts/
 │   ├── create-local-table.sh  # Script to create local DynamoDB table
+│   ├── deploy-with-tags.sh    # Script for deployment with cost tracking tags
 │   ├── seed-data.json         # Sample data for development
 │   └── setup.sh               # Environment setup script
 ├── src/
@@ -184,46 +213,43 @@ Before starting development, you need to have the following tools installed:
 
 ## Local Development
 
-### Starting the Local Development Environment (Integrated Method)
+### Starting the Local Development Environment
 
-The simplest way is to use the integrated method that performs all setup with a single command:
+The simplest way is to use the SST development environment:
 
 ```bash
 npm run dev
 ```
 
-This command executes the following processes in sequence:
-1. Installs the serverless-dynamodb-local plugin (if needed)
-2. Starts DynamoDB Local
-3. Starts the API server (Serverless Offline)
+This command:
 
-### Starting Individual Services (Traditional Method)
+1. Starts the SST development environment
+2. Sets up a Live Lambda development environment to test your functions
 
-If you want to start services individually, you can follow these steps:
-
-#### Running DynamoDB Local
-
-DynamoDB Local is started using the serverless-dynamodb-local plugin:
+For local development with local DynamoDB:
 
 ```bash
-npx serverless dynamodb start
+npm run dev:local
 ```
 
-This command starts DynamoDB Local on port 8000. On first run, the necessary files will be downloaded automatically.
+This command:
 
-#### Creating Local Tables
+1. Sets up a local DynamoDB table
+2. Starts the SST development environment
+
+### Setting Up Individual Services
+
+You can also set up services individually:
+
+#### Running Local DynamoDB
+
+If you need to create or configure DynamoDB tables locally:
 
 ```bash
 bash ./scripts/create-local-table.sh
 ```
 
-#### Starting the Development Server
-
-```bash
-npm start
-```
-
-This emulates the API Gateway environment and is typically accessible at `http://localhost:3000`.
+This command creates a local DynamoDB table named `KeyValueStore` (or the name specified in your environment variables).
 
 ### Debugging
 
@@ -233,12 +259,12 @@ If you're using VS Code, you can use the pre-configured debug configurations in 
 
    - Open a test file and select "Debug Tests" from the VS Code debug panel
 
-2. Debugging Serverless Offline:
-   - First, start the server in debug mode:
+2. Debugging SST:
+   - First, start the SST development environment:
      ```bash
-     npm start -- --inspect
+     npm run dev
      ```
-   - Select "Attach to Serverless Offline" from the VS Code debug panel
+   - Use the SST Console and Live Lambda Development to debug your functions
 
 ## Testing
 
@@ -282,13 +308,44 @@ npm run lint:fix
 npm run format
 ```
 
+## 認証・API Keyの利用
+
+このAPIはAPI Key認証が有効です。API KeyはSST Secretとして管理され、Lambdaオーソライザーで検証されます。
+
+### API Keyのセット・取得
+
+1. Secretの登録（初回のみ）
+
+```bash
+sst secret set ApiKey <your-api-key>
+```
+
+2. デプロイ
+
+```bash
+npm run deploy
+```
+
+3. API Keyを使ったリクエスト例
+
+```bash
+curl -H "x-api-key: <your-api-key>" https://<api-url>/item/testKey
+```
+
+### よく使うnpmコマンド
+
+- 開発サーバー起動: `npm start`
+- テスト実行: `npm test`
+- デプロイ: `npm run deploy`
+- Secret登録: `sst secret set ApiKey <your-api-key>`
+
 ## Testing the API
 
 To test the API in the local environment, you can use curl commands as follows:
 
 ### Authentication
 
-When testing locally with serverless-offline, API key authentication is enabled by default. You need to pass an API key with each request:
+When testing with SST, API key authentication is enabled. You need to pass an API key with each request:
 
 ```bash
 # For local development, you can use any string as the API key
@@ -298,8 +355,11 @@ API_KEY="dev-api-key-for-testing"
 For deployed environments, you need to retrieve the actual API key:
 
 ```bash
-# Get the API key from your deployed service
-API_KEY=$(npx serverless info | grep -A 1 "api keys:" | tail -n 1 | tr -d ' ')
+# Get information about your deployment
+npm run console
+
+# Or directly get the API key using AWS CLI
+API_KEY=$(aws apigateway get-api-keys --name-query "KeyValueStoreApiKey" --include-values --query "items[0].value" --output text)
 ```
 
 ### Getting an Item
@@ -344,7 +404,39 @@ After testing your changes locally, to deploy to AWS:
 npm run deploy
 ```
 
-This command uses the Serverless Framework to deploy your application. Make sure your AWS credentials are correctly configured before deploying.
+This command uses SST to deploy your application. Make sure your AWS credentials are correctly configured before deploying.
+
+### Deployment with Additional Tags
+
+In SST v3, tags are configured in `sst.config.ts`. You can add additional tags via environment variables:
+
+```bash
+# Deploy with additional project and owner tags
+PROJECT_NAME=my-custom-project OWNER=team-name npm run deploy
+
+# Deploy to specific stage with tags
+PROJECT_NAME=my-project ./scripts/deploy.sh --with-tags --stage dev
+```
+
+The following tags are always applied automatically:
+- `Environment`: Matches the deployment stage (dev, staging, prod)
+- `ManagedBy`: Always set to "SST"
+
+Additional tags can be set via environment variables:
+- `PROJECT_NAME`: Adds a "Project" tag
+- `OWNER`: Adds an "Owner" tag
+
+You can also specify a stage for deployment:
+
+```bash
+npm run deploy -- --stage dev
+```
+
+To remove a deployment:
+
+```bash
+npm run remove
+```
 
 ## Recommended Development Tools
 

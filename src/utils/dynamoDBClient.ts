@@ -1,4 +1,4 @@
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, DynamoDBClientConfig } from '@aws-sdk/client-dynamodb';
 import {
   DynamoDBDocumentClient,
   GetCommand,
@@ -28,7 +28,14 @@ export class DynamoDBRepository implements KeyValueRepository {
     tableName: string = process.env.TABLE_NAME || 'KeyValueStore'
   ) {
     // DynamoDB クライアントの初期化
-    const client = new DynamoDBClient({ region });
+    const clientConfig: DynamoDBClientConfig = { region };
+
+    // ローカル開発環境向け設定
+    if (process.env.IS_LOCAL === 'true' || process.env.NODE_ENV === 'test') {
+      clientConfig.endpoint = 'http://localhost:8000';
+    }
+
+    const client = new DynamoDBClient(clientConfig);
     // DocumentClient の初期化（高レベルのオブジェクト指向インターフェース）
     this.dynamoDBDocClient = DynamoDBDocumentClient.from(client);
     this.tableName = tableName;

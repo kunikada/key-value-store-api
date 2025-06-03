@@ -10,15 +10,15 @@ if [ -f .env ]; then
 fi
 
 # テーブル名のデフォルト値設定
-TABLE_NAME=${TABLE_NAME:-"key-value-store"}
+TABLE_NAME=${TABLE_NAME:-"KeyValueStore"}
 
 # ローカルDynamoDBテーブル作成
 echo "テーブル '${TABLE_NAME}' を作成しています..."
 
 aws dynamodb create-table \
   --table-name ${TABLE_NAME} \
-  --attribute-definitions AttributeName=id,AttributeType=S \
-  --key-schema AttributeName=id,KeyType=HASH \
+  --attribute-definitions AttributeName=key,AttributeType=S \
+  --key-schema AttributeName=key,KeyType=HASH \
   --billing-mode PAY_PER_REQUEST \
   --endpoint-url http://localhost:8000 \
   --region ${AWS_REGION:-"us-east-1"} || { echo "テーブル作成に失敗しました"; exit 1; }

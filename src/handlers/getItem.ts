@@ -1,8 +1,12 @@
 import { APIGatewayEvent, Context, Callback } from 'aws-lambda';
-import { isItemExpired } from '@src/utils/ttlHelper';
-import { getRepository } from '@src/utils/repositoryFactory';
+import { isItemExpired } from '@utils/ttlHelper';
+import { getRepository } from '@utils/repositoryFactory';
 
-export const getItemHandler = async (event: APIGatewayEvent, _context: Context, _callback: Callback) => {
+export const getItemHandler = async (
+  event: APIGatewayEvent,
+  _context: Context,
+  _callback: Callback
+) => {
   const key = event.pathParameters?.key;
 
   if (!key) {

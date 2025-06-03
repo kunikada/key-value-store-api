@@ -1,4 +1,4 @@
-import { KeyValueRepository } from '@src/utils/dynamoDBClient';
+import { KeyValueRepository } from '@utils/dynamoDBClient.js';
 
 // リポジトリインスタンスを保持する変数
 let repositoryInstance: KeyValueRepository | null = null;
@@ -18,7 +18,7 @@ export const setRepository = (repository: KeyValueRepository): void => {
 export const getRepository = async (): Promise<KeyValueRepository> => {
   if (!repositoryInstance) {
     // 動的インポートでデフォルトリポジトリを取得
-    const { defaultRepository } = await import('../utils/dynamoDBClient');
+    const { defaultRepository } = await import('@utils/dynamoDBClient.js');
     repositoryInstance = defaultRepository;
   }
   return repositoryInstance;
