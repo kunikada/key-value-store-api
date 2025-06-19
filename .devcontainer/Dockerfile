@@ -18,3 +18,6 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
     && apt-get update \
     && apt-get install -y gh \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+
+# Serverless Frameworkのインストール
+RUN npm install -g serverless

@@ -32,7 +32,7 @@ To deploy and use this API, you need the following:
 - npm 10.x or higher
 - AWS Account
 - AWS CLI configured with appropriate credentials
-- Serverless Framework (`npm install -g serverless`)
+- Serverless Framework
 
 ### Installation
 
@@ -54,7 +54,7 @@ To deploy and use this API, you need the following:
    ```bash
    cp .env.example .env
    ```
-   
+
    Edit the `.env` file to customize settings as needed.
 
 ### Deployment
@@ -107,6 +107,7 @@ GET /item/{key}
 ```
 
 Response: (Plain text)
+
 ```
 your stored value
 ```
@@ -118,17 +119,20 @@ PUT /item/{key}
 ```
 
 Request body:
+
 ```
 <TEXT DATA>
 ```
 
 HTTP Headers:
+
 ```
 Content-Type: text/plain
 X-TTL-Seconds: 3600  // Optional: automatically delete after specified seconds (1 hour = 3600 seconds)
 ```
 
 URL Query Parameters (alternative to headers):
+
 ```
 ttl=3600  // Optional: automatically delete after specified seconds
 ```
@@ -136,6 +140,7 @@ ttl=3600  // Optional: automatically delete after specified seconds
 Note: When both header and query parameter are provided, the header takes precedence.
 
 Response: (Plain text)
+
 ```
 Item successfully saved
 ```
@@ -147,11 +152,13 @@ POST /extractCode/{key}
 ```
 
 Request body:
+
 ```
 <TEXT DATA CONTAINING CODE>
 ```
 
 HTTP Headers:
+
 ```
 Content-Type: text/plain
 X-TTL-Seconds: 3600      // Optional: automatically delete after specified seconds
@@ -165,11 +172,13 @@ Note: When both headers and query parameters are provided, headers take preceden
 This endpoint extracts codes from the provided text and stores the first match using the specified key.
 
 Examples:
+
 - With default settings (`X-Digits: 4` and `X-Character-Type: numeric`), sending "Your verification code is 123456" will extract and store "123456"
 - With `X-Character-Type: alphanumeric`, sending "Your activation code is ABC123" will extract and store "ABC123"
 - Using query parameters: `POST /extractCode/myKey?digits=5&characterType=alphanumeric`
 
 Response: (Plain text)
+
 ```
 Code extracted and stored successfully: 123456
 ```
@@ -181,6 +190,7 @@ DELETE /item/{key}
 ```
 
 Response: (Plain text)
+
 ```
 Item successfully deleted
 ```
@@ -213,7 +223,7 @@ You can set up a custom domain for your API using the Serverless Framework. This
 
    custom:
      # Existing custom configurations...
-     
+
      customDomain:
        domainName: api.example.com
        basePath: '' # Leave empty for root path
@@ -254,19 +264,19 @@ You can also configure path mappings to have multiple APIs under different paths
 custom:
   customDomain:
     domainName: api.example.com
-    basePath: 'store'  # This will make your API available at api.example.com/store
+    basePath: 'store' # This will make your API available at api.example.com/store
 ```
 
 ## Environment Variables
 
 This service can be configured using the following environment variables (see `.env.example` for reference):
 
-| Environment Variable | Description                | Default Value      |
-| -------------------- | -------------------------- | ------------------ |
-| `DEFAULT_TTL`        | Default TTL in seconds     | `86400` (24 hours) |
-| `DYNAMODB_TABLE`     | DynamoDB table name        | `KeyValueStore`    |
-| `AWS_REGION`         | AWS region for deployment  | `ap-northeast-1`   |
-| `STAGE`              | Deployment stage           | `v1`               |
+| Environment Variable | Description               | Default Value      |
+| -------------------- | ------------------------- | ------------------ |
+| `DEFAULT_TTL`        | Default TTL in seconds    | `86400` (24 hours) |
+| `DYNAMODB_TABLE`     | DynamoDB table name       | `KeyValueStore`    |
+| `AWS_REGION`         | AWS region for deployment | `ap-northeast-1`   |
+| `STAGE`              | Deployment stage          | `v1`               |
 
 The `STAGE` environment variable is particularly important as it determines which environment (development, staging, production) your service will be deployed to. Each stage creates a completely separate set of resources in AWS.
 
@@ -296,6 +306,7 @@ npm run deploy
 You can also set the default stage by:
 
 1. Adding the stage parameter in `serverless.yml`:
+
    ```yaml
    provider:
      name: aws
@@ -304,6 +315,7 @@ You can also set the default stage by:
    ```
 
 2. Setting an environment variable:
+
    ```bash
    export STAGE=v1
    npm run deploy
@@ -315,6 +327,7 @@ You can also set the default stage by:
    ```
 
 When multiple methods are used, the priority is as follows:
+
 1. Command line option (`--stage`) has the highest priority
 2. Environment variable set in the shell session
 3. Value in the `.env` file

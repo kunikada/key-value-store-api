@@ -1,6 +1,6 @@
 {
   "name": "key-value-store-api",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A serverless REST API for a key-value store using AWS.",
   "type": "module",
   "main": "src/handlers/index.ts",

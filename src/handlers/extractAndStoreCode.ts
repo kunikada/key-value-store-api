@@ -22,7 +22,7 @@ const extractCode = (
       // 英数字混合のパターン（英数以外の文字または文字列の先頭/末尾に囲まれた英数字）
       pattern = new RegExp(`(?:^|[^a-zA-Z0-9])([A-Za-z0-9]{${digits}})(?:[^a-zA-Z0-9]|$)`, 'g');
       break;
-// Removed the redundant default case as it duplicates the 'numeric' case and is unreachable.
+    // Removed the redundant default case as it duplicates the 'numeric' case and is unreachable.
   }
 
   // 正規表現でマッチした部分を格納する配列
