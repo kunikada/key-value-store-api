@@ -15,14 +15,14 @@ graph TD
     APIG -->|Invoke| LambdaPut[Lambda: putItem]
     APIG -->|Invoke| LambdaDel[Lambda: deleteItem]
     APIG -->|Invoke| LambdaExt[Lambda: extractAndStoreCode]
-    
+
     LambdaGet -->|Read| DDB[(Amazon DynamoDB)]
     LambdaPut -->|Write| DDB
     LambdaDel -->|Delete| DDB
     LambdaExt -->|Extract & Write| DDB
-    
+
     DDB -->|Auto-delete expired items| TTL[TTL Mechanism]
-    
+
     subgraph "AWS Cloud"
         APIG
         subgraph "Lambda Functions"
@@ -34,7 +34,7 @@ graph TD
         DDB
         TTL
     end
-    
+
     subgraph "Development & Deployment"
         SF[Serverless Framework] -->|Deploy| APIG
         SF -->|Deploy| LambdaGet
@@ -193,6 +193,7 @@ npm run dev
 ```
 
 This command executes the following processes in sequence:
+
 1. Installs the serverless-dynamodb-local plugin (if needed)
 2. Starts DynamoDB Local
 3. Starts the API server (Serverless Offline)
