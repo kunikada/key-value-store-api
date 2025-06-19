@@ -99,25 +99,25 @@ For detailed information about setting up the development environment, running t
 
 ## API Usage
 
-### 認証（API Key）
+### Authentication (API Key)
 
-このAPIはAPI Key認証が有効です。API KeyはSST Secretとして管理され、Lambdaオーソライザーで検証されます。
+This API uses API Key authentication. The API Key is managed as an SST Secret and validated by a Lambda authorizer.
 
-#### API Keyのセット・取得
+### Setting and Retrieving the API Key
 
-1. Secretの登録（初回のみ）
+1. Register the secret (only once):
 
    ```bash
    sst secret set ApiKey <your-api-key>
    ```
 
-2. デプロイ
+2. Deploy:
 
    ```bash
    npm run deploy
    ```
 
-3. API Keyを使ったリクエスト例
+3. Example request using the API Key:
 
    ```bash
    curl -H "x-api-key: <your-api-key>" https://<api-url>/item/testKey
@@ -390,6 +390,12 @@ This will delete all AWS resources created by the deployment, including Lambda f
 
 - `X-TTL-Seconds`: Time in seconds specified in HTTP header after which the item will be automatically deleted (optional)
 - If not specified, the value from the environment variable `DEFAULT_TTL` will be used (default is 24 hours)
+
+## Lambda Memory and Timeout Settings
+
+By default, all Lambda functions in this project use the AWS default memory size of **128MB** and the default timeout of **3 seconds**. These settings are sufficient for typical key-value operations and can be customized in the stack configuration if needed.
+
+If you require more memory or a longer timeout for specific use cases, you can add the `memorySize` and `timeout` properties to each function definition in `stacks/ApiStack.ts`.
 
 ## Contributing
 

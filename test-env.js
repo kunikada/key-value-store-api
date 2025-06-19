@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 // 環境変数の読み込みテスト
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 // .envファイルを手動で読み込み
 const envPath = path.join(__dirname, '.env');

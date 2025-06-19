@@ -120,6 +120,7 @@ key-value-store-api/
 │       ├── repositoryFactory.ts # Repository factory for DynamoDB operations
 │       └── ttlHelper.ts        # TTL functionality helper
 └── tests/
+    ├── aws-integration.test.sample.ts   # Sample integration test for production AWS environment. Copy and use for your own environment.
     ├── integration/
     │   ├── api.test.ts          # Integration tests for the API
     │   ├── apiClient.ts         # API client for integration tests

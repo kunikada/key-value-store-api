@@ -1,6 +1,6 @@
 {
   "name": "key-value-store-api",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A serverless REST API for a key-value store using AWS.",
   "type": "module",
   "main": "src/handlers/index.ts",
@@ -25,30 +25,30 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.821.0",
-    "@aws-sdk/lib-dynamodb": "^3.821.0",
+    "@aws-sdk/client-dynamodb": "^3.830.0",
+    "@aws-sdk/lib-dynamodb": "^3.830.0",
     "aws-lambda": "^1.0.7",
-    "sst": "^3.17.0"
+    "sst": "^3.17.6"
   },
   "devDependencies": {
     "@aws-cdk/aws-apigateway": "^1.204.0",
-    "@eslint/js": "^9.28.0",
-    "@types/aws-lambda": "^8.10.149",
+    "@eslint/js": "^9.29.0",
+    "@types/aws-lambda": "^8.10.150",
     "@types/node": "^22.15.29",
     "@types/supertest": "^6.0.3",
     "@whatwg-node/server": "^0.10.10",
-    "aws-cdk-lib": "^2.199.0",
-    "axios": "^1.9.0",
+    "aws-cdk-lib": "^2.201.0",
+    "axios": "^1.10.0",
     "constructs": "^10.4.2",
     "dotenv": "^16.5.0",
     "esbuild": "^0.25.5",
-    "eslint": "^9.28.0",
+    "eslint": "^9.29.0",
     "globals": "^16.2.0",
     "prettier": "^3.2.5",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.33.0",
-    "vitest": "^3.1.4"
+    "typescript-eslint": "^8.34.1",
+    "vitest": "^3.2.4"
   },
   "author": "kunikada",
   "license": "MIT"

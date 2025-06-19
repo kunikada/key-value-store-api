@@ -1,3 +1,5 @@
+import * as sst from "sst/constructs";
+
 export function ApiStack() {
   // DynamoDBテーブルの作成
   const table = new sst.aws.Dynamo('KeyValueStore', {
@@ -9,59 +11,66 @@ export function ApiStack() {
   });
 
   // API Key用のSecretを作成
-  const apiKeySecret = new sst.Secret("ApiKey");
+  const apiKeySecret = new sst.Secret('ApiKey');
 
   // API Gateway (sst.Api) の作成
-  const api = new sst.Api(this, "KeyValueStoreApi", {
+  const api = new sst.Api(this, 'KeyValueStoreApi', {
     cors: true,
     authorizers: {
       apiKeyAuth: {
-        type: "lambda",
-        function: "src/handlers/apiKeyAuthorizer.apiKeyAuthorizer",
-        responseTypes: ["simple"],
+        type: 'lambda',
+        function: {
+          handler: 'src/handlers/apiKeyAuthorizer.apiKeyAuthorizer',
+          runtime: 'nodejs22.x',
+        },
+        responseTypes: ['simple'],
       },
     },
-    defaultAuthorizer: "apiKeyAuth",
+    defaultAuthorizer: 'apiKeyAuth',
     routes: {
-      "GET /item/{key}": {
+      'GET /item/{key}': {
         function: {
-          handler: "src/handlers/getItem.getItemHandler",
+          handler: 'src/handlers/getItem.getItemHandler',
+          runtime: 'nodejs22.x',
           environment: {
             TABLE_NAME: table.name,
-            DEFAULT_TTL: process.env.DEFAULT_TTL || "86400",
+            DEFAULT_TTL: process.env.DEFAULT_TTL || '86400',
             API_KEY: apiKeySecret.value,
           },
           permissions: [table, apiKeySecret],
         },
       },
-      "PUT /item/{key}": {
+      'PUT /item/{key}': {
         function: {
-          handler: "src/handlers/putItem.putItemHandler",
+          handler: 'src/handlers/putItem.putItemHandler',
+          runtime: 'nodejs22.x',
           environment: {
             TABLE_NAME: table.name,
-            DEFAULT_TTL: process.env.DEFAULT_TTL || "86400",
+            DEFAULT_TTL: process.env.DEFAULT_TTL || '86400',
             API_KEY: apiKeySecret.value,
           },
           permissions: [table, apiKeySecret],
         },
       },
-      "DELETE /item/{key}": {
+      'DELETE /item/{key}': {
         function: {
-          handler: "src/handlers/deleteItem.deleteItemHandler",
+          handler: 'src/handlers/deleteItem.deleteItemHandler',
+          runtime: 'nodejs22.x',
           environment: {
             TABLE_NAME: table.name,
-            DEFAULT_TTL: process.env.DEFAULT_TTL || "86400",
+            DEFAULT_TTL: process.env.DEFAULT_TTL || '86400',
             API_KEY: apiKeySecret.value,
           },
           permissions: [table, apiKeySecret],
         },
       },
-      "POST /extractCode/{key}": {
+      'POST /extractCode/{key}': {
         function: {
-          handler: "src/handlers/extractAndStoreCode.extractAndStoreCodeHandler",
+          handler: 'src/handlers/extractAndStoreCode.extractAndStoreCodeHandler',
+          runtime: 'nodejs22.x',
           environment: {
             TABLE_NAME: table.name,
-            DEFAULT_TTL: process.env.DEFAULT_TTL || "86400",
+            DEFAULT_TTL: process.env.DEFAULT_TTL || '86400',
             API_KEY: apiKeySecret.value,
           },
           permissions: [table, apiKeySecret],

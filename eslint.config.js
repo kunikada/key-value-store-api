@@ -4,7 +4,7 @@ import globals from 'globals';
 
 export default [
   {
-    ignores: ['*.config.*', 'tests/**/*', 'dist/**/*'],
+    ignores: ['*.config.*', 'tests/**/*', 'dist/**/*', '.sst/**/*'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
