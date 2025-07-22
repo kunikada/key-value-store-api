@@ -127,7 +127,7 @@ export const logError = (
           name: error.name,
           message: error.message,
           stack: error.stack,
-          // ES2022のError causeを活用
+          // Error.causeを利用してエラーの原因を記録
           cause: error.cause ? String(error.cause) : undefined,
         }
       : { error: String(error) };
