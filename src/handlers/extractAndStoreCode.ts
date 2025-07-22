@@ -1,6 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { getTTLFromHeaders, calculateTTL } from '@src/utils/ttlHelper';
 import { getRepository } from '@src/utils/repositoryFactory';
+import { extractRequestInfo, logError, logInfo, logWarn, logDebug } from '@src/utils/logger';
 
 // 文字種別の定義
 type CharacterType = 'numeric' | 'alphanumeric';
@@ -58,11 +59,14 @@ const extractCode = (
 export const extractAndStoreCodeHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
+  const requestInfo = extractRequestInfo(event);
+
   try {
     // リクエストボディからテキストを取得
     const messageText = event.body;
 
     if (!messageText) {
+      logWarn('Bad request: Empty request body', requestInfo);
       return {
         statusCode: 400,
         headers: {
@@ -76,6 +80,7 @@ export const extractAndStoreCodeHandler = async (
     const key = event.pathParameters?.key;
 
     if (!key) {
+      logWarn('Bad request: Missing key in path parameters', requestInfo);
       return {
         statusCode: 400,
         headers: {
@@ -101,8 +106,20 @@ export const extractAndStoreCodeHandler = async (
       (queryParams.characterType as CharacterType) ||
       'numeric';
 
+    logDebug('Extraction parameters determined', requestInfo, {
+      key,
+      digits,
+      characterType,
+      messageLength: messageText.length,
+    });
+
     // 文字種別の検証
     if (characterType !== 'numeric' && characterType !== 'alphanumeric') {
+      logWarn('Bad request: Invalid character type', requestInfo, {
+        key,
+        characterType,
+        validTypes: ['numeric', 'alphanumeric'],
+      });
       return {
         statusCode: 400,
         headers: {
@@ -113,9 +130,23 @@ export const extractAndStoreCodeHandler = async (
     }
 
     // テキストからコードを抽出
+    logDebug('Attempting code extraction', requestInfo, {
+      key,
+      digits,
+      characterType,
+      messageTextPreview: messageText.substring(0, 100),
+    });
+
     const extractedCode = extractCode(messageText, digits, characterType);
 
     if (!extractedCode) {
+      logWarn('Code extraction failed - no matching code found', requestInfo, {
+        key,
+        digits,
+        characterType,
+        messageLength: messageText.length,
+        messageTextPreview: messageText.substring(0, 200), // 異常時により詳細な情報を提供
+      });
       return {
         statusCode: 400,
         headers: {
@@ -130,9 +161,24 @@ export const extractAndStoreCodeHandler = async (
     // 常に有効なTTLタイムスタンプを計算
     const ttlTimestamp = calculateTTL(ttlSeconds);
 
+    logDebug('Code successfully extracted, attempting to store', requestInfo, {
+      key,
+      extractedCode,
+      digits,
+      characterType,
+      ttlSeconds,
+      ttlTimestamp,
+    });
+
     // リポジトリを取得し、アイテムを保存
     const repository = await getRepository();
     await repository.putItem(key, extractedCode, ttlTimestamp);
+
+    // 正常処理完了時はINFOレベルで簡潔にログ出力（本番環境では通常非表示）
+    logInfo('Code extracted and stored successfully', requestInfo, {
+      key,
+      extractedCode,
+    });
 
     return {
       statusCode: 200,
@@ -142,7 +188,12 @@ export const extractAndStoreCodeHandler = async (
       body: `Code extracted and stored successfully: ${extractedCode}`,
     };
   } catch (error) {
-    console.error('Error:', error);
+    // エラー時は詳細な情報をログ出力
+    logError('Error in extractAndStoreCode handler', error, requestInfo, {
+      body: event.body?.substring(0, 500), // エラー時にリクエストボディの情報も含める
+      pathParameters: event.pathParameters,
+      queryStringParameters: event.queryStringParameters,
+    });
     return {
       statusCode: 500,
       headers: {

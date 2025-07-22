@@ -24,10 +24,6 @@ if ! aws sts get-caller-identity &> /dev/null; then
   echo ""
 fi
 
-# APIのビルド
-echo "プロジェクトをビルドしています..."
-npm run build || { echo "ビルドに失敗しました"; exit 1; }
-
 echo "セットアップが完了しました！"
 echo ""
 echo "以下のコマンドでローカル開発サーバーを起動できます:"

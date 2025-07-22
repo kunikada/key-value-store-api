@@ -283,6 +283,67 @@ npm run lint:fix
 npm run format
 ```
 
+## Logging Policy
+
+This project follows a structured logging approach with the following principles:
+
+### Log Level Strategy
+
+- **ERROR**: Critical errors that require immediate attention
+- **WARN**: Warning conditions that indicate potential issues
+- **INFO**: General information about successful operations (minimal in production)
+- **DEBUG**: Detailed diagnostic information for development and troubleshooting
+
+### Environment-based Log Level Configuration
+
+The log level can be configured using the `LOG_LEVEL` environment variable:
+
+```bash
+# In .env file
+LOG_LEVEL=INFO  # Options: ERROR, WARN, INFO, DEBUG
+```
+
+**Default behavior:**
+- **Production environment** (`NODE_ENV=production`): WARN level and above
+- **Development environment**: INFO level and above
+- **Custom override**: Set `LOG_LEVEL` environment variable to override defaults
+
+### Logging Guidelines
+
+1. **Normal Operations**: Minimize log output to reduce noise
+   - Use `logInfo()` sparingly for successful operations
+   - Use `logDebug()` for detailed diagnostic information
+
+2. **Error Conditions**: Provide comprehensive logging for troubleshooting
+   - Include detailed context information (request parameters, error details)
+   - Log warning conditions that might indicate issues
+   - Include relevant request data in error logs (first 500 characters of body, path parameters, etc.)
+
+3. **Structured Logging**: All logs are output as structured JSON for better parsing and analysis in AWS CloudWatch
+
+4. **Security**: Sensitive information (API keys, authentication tokens) is filtered out from logs
+
+### Example Usage
+
+```typescript
+// Normal operation (minimal logging in production)
+logInfo('Operation completed successfully', requestInfo, { key, resultSize });
+
+// Error condition (detailed logging)
+logError('Database operation failed', error, requestInfo, {
+  operation: 'putItem',
+  key,
+  requestBody: event.body?.substring(0, 500),
+  pathParameters: event.pathParameters
+});
+
+// Debug information (development only)
+logDebug('Processing parameters', requestInfo, {
+  extractedParams: params,
+  validationResults: results
+});
+```
+
 ## Testing the API
 
 To test the API in the local environment, you can use curl commands as follows:
