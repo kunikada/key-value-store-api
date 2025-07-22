@@ -59,18 +59,18 @@ export const extractRequestInfo = (event: APIGatewayEvent): RequestInfo => {
     queryStringParameters: event.queryStringParameters,
     headers: {
       // セキュリティ上重要でないヘッダーのみログに記録
-      // ES2022のObject.hasOwn()でより安全なプロパティチェック
-      'content-type': Object.hasOwn(headers, 'Content-Type')
+      // ヘッダーのプロパティチェックに'in'演算子を使用
+      'content-type': 'Content-Type' in headers
         ? headers['Content-Type']
         : headers['content-type'],
-      'user-agent': Object.hasOwn(headers, 'User-Agent')
+      'user-agent': 'User-Agent' in headers
         ? headers['User-Agent']
         : headers['user-agent'],
-      'x-ttl-seconds': Object.hasOwn(headers, 'X-TTL-Seconds')
+      'x-ttl-seconds': 'X-TTL-Seconds' in headers
         ? headers['X-TTL-Seconds']
         : headers['x-ttl-seconds'],
-      'x-digits': Object.hasOwn(headers, 'X-Digits') ? headers['X-Digits'] : headers['x-digits'],
-      'x-character-type': Object.hasOwn(headers, 'X-Character-Type')
+      'x-digits': 'X-Digits' in headers ? headers['X-Digits'] : headers['x-digits'],
+      'x-character-type': 'X-Character-Type' in headers
         ? headers['X-Character-Type']
         : headers['x-character-type'],
     },
