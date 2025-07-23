@@ -60,19 +60,13 @@ export const extractRequestInfo = (event: APIGatewayEvent): RequestInfo => {
     headers: {
       // セキュリティ上重要でないヘッダーのみログに記録
       // ヘッダーのプロパティチェックに'in'演算子を使用
-      'content-type': 'Content-Type' in headers
-        ? headers['Content-Type']
-        : headers['content-type'],
-      'user-agent': 'User-Agent' in headers
-        ? headers['User-Agent']
-        : headers['user-agent'],
-      'x-ttl-seconds': 'X-TTL-Seconds' in headers
-        ? headers['X-TTL-Seconds']
-        : headers['x-ttl-seconds'],
+      'content-type': 'Content-Type' in headers ? headers['Content-Type'] : headers['content-type'],
+      'user-agent': 'User-Agent' in headers ? headers['User-Agent'] : headers['user-agent'],
+      'x-ttl-seconds':
+        'X-TTL-Seconds' in headers ? headers['X-TTL-Seconds'] : headers['x-ttl-seconds'],
       'x-digits': 'X-Digits' in headers ? headers['X-Digits'] : headers['x-digits'],
-      'x-character-type': 'X-Character-Type' in headers
-        ? headers['X-Character-Type']
-        : headers['x-character-type'],
+      'x-character-type':
+        'X-Character-Type' in headers ? headers['X-Character-Type'] : headers['x-character-type'],
     },
     sourceIp: event.requestContext?.identity?.sourceIp,
     userAgent: event.requestContext?.identity?.userAgent,

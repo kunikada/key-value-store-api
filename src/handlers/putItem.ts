@@ -1,14 +1,22 @@
 import { APIGatewayEvent, Context, Callback } from 'aws-lambda';
 import { getTTLFromHeaders, calculateTTL } from '@src/utils/ttlHelper';
 import { getRepository } from '@src/utils/repositoryFactory';
-import { extractRequestInfo, logError, logInfo, logWarn, logDebug } from '@src/utils/logger';
+import { extractRequestInfo, logError, logInfo, logWarn } from '@src/utils/logger';
+import { validateApiKeyForDevelopment } from '@src/utils/devAuthMiddleware';
 
 export const putItemHandler = async (
   event: APIGatewayEvent,
   _context: Context,
   _callback: Callback
 ) => {
+  // 開発環境でのAPI認証チェック（本番環境ではAPI Gatewayが自動で認証）
+  const authError = validateApiKeyForDevelopment(event);
+  if (authError) {
+    return authError;
+  }
+
   const requestInfo = extractRequestInfo(event);
+
   const key = event.pathParameters?.key;
 
   if (!key) {
@@ -49,17 +57,10 @@ export const putItemHandler = async (
   }
 
   try {
-    // ヘッダーからTTL秒数を取得
-    const ttlSeconds = getTTLFromHeaders(event);
+    // ヘッダーからTTL秒数を取得（ログ出力付き）
+    const ttlSeconds = getTTLFromHeaders(event, requestInfo);
     // 常に有効なTTLタイムスタンプを計算
     const ttlTimestamp = calculateTTL(ttlSeconds);
-
-    logDebug('Attempting to save item to repository', requestInfo, {
-      key,
-      valueLength: value.length,
-      ttlSeconds,
-      ttlTimestamp,
-    });
 
     // リポジトリを取得してアイテムを保存
     const repository = await getRepository();

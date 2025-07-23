@@ -1,14 +1,22 @@
 import { APIGatewayEvent, Context, Callback } from 'aws-lambda';
 import { isItemExpired } from '@src/utils/ttlHelper';
 import { getRepository } from '@src/utils/repositoryFactory';
-import { extractRequestInfo, logError, logInfo, logWarn, logDebug } from '@src/utils/logger';
+import { extractRequestInfo, logError, logInfo, logWarn } from '@src/utils/logger';
+import { validateApiKeyForDevelopment } from '@src/utils/devAuthMiddleware';
 
 export const getItemHandler = async (
   event: APIGatewayEvent,
   _context: Context,
   _callback: Callback
 ) => {
+  // 開発環境でのAPI認証チェック（本番環境ではAPI Gatewayが自動で認証）
+  const authError = validateApiKeyForDevelopment(event);
+  if (authError) {
+    return authError;
+  }
+
   const requestInfo = extractRequestInfo(event);
+
   const key = event.pathParameters?.key;
 
   if (!key) {
@@ -25,7 +33,6 @@ export const getItemHandler = async (
     // リポジトリを取得してアイテムを取得
     const repository = await getRepository();
 
-    logDebug('Attempting to retrieve item from repository', requestInfo, { key });
     const item = await repository.getItem(key);
 
     if (!item) {

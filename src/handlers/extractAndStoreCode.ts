@@ -1,7 +1,8 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { getTTLFromHeaders, calculateTTL } from '@src/utils/ttlHelper';
 import { getRepository } from '@src/utils/repositoryFactory';
-import { extractRequestInfo, logError, logInfo, logWarn, logDebug } from '@src/utils/logger';
+import { extractRequestInfo, logError, logInfo, logWarn } from '@src/utils/logger';
+import { validateApiKeyForDevelopment } from '@src/utils/devAuthMiddleware';
 
 // 文字種別の定義
 type CharacterType = 'numeric' | 'alphanumeric';
@@ -59,6 +60,12 @@ const extractCode = (
 export const extractAndStoreCodeHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
+  // 開発環境でのAPI認証チェック（本番環境ではAPI Gatewayが自動で認証）
+  const authError = validateApiKeyForDevelopment(event);
+  if (authError) {
+    return authError;
+  }
+
   const requestInfo = extractRequestInfo(event);
 
   try {
@@ -106,13 +113,6 @@ export const extractAndStoreCodeHandler = async (
       (queryParams.characterType as CharacterType) ||
       'numeric';
 
-    logDebug('Extraction parameters determined', requestInfo, {
-      key,
-      digits,
-      characterType,
-      messageLength: messageText.length,
-    });
-
     // 文字種別の検証
     if (characterType !== 'numeric' && characterType !== 'alphanumeric') {
       logWarn('Bad request: Invalid character type', requestInfo, {
@@ -130,13 +130,6 @@ export const extractAndStoreCodeHandler = async (
     }
 
     // テキストからコードを抽出
-    logDebug('Attempting code extraction', requestInfo, {
-      key,
-      digits,
-      characterType,
-      messageTextPreview: messageText.substring(0, 100),
-    });
-
     const extractedCode = extractCode(messageText, digits, characterType);
 
     if (!extractedCode) {
@@ -156,19 +149,10 @@ export const extractAndStoreCodeHandler = async (
       };
     }
 
-    // 共通の関数を使用してTTLを取得・計算
-    const ttlSeconds = getTTLFromHeaders(event);
+    // 共通の関数を使用してTTLを取得・計算（ログ出力付き）
+    const ttlSeconds = getTTLFromHeaders(event, requestInfo);
     // 常に有効なTTLタイムスタンプを計算
     const ttlTimestamp = calculateTTL(ttlSeconds);
-
-    logDebug('Code successfully extracted, attempting to store', requestInfo, {
-      key,
-      extractedCode,
-      digits,
-      characterType,
-      ttlSeconds,
-      ttlTimestamp,
-    });
 
     // リポジトリを取得し、アイテムを保存
     const repository = await getRepository();
