@@ -231,7 +231,6 @@ This emulates the API Gateway environment and is typically accessible at `http:/
 If you're using VS Code, you can use the pre-configured debug configurations in `.vscode/launch.json`:
 
 1. Debugging tests:
-
    - Open a test file and select "Debug Tests" from the VS Code debug panel
 
 2. Debugging Serverless Offline:
@@ -304,6 +303,7 @@ LOG_LEVEL=INFO  # Options: ERROR, WARN, INFO, DEBUG
 ```
 
 **Default behavior:**
+
 - **Production environment** (`NODE_ENV=production`): WARN level and above
 - **Development environment**: INFO level and above
 - **Custom override**: Set `LOG_LEVEL` environment variable to override defaults
@@ -334,13 +334,13 @@ logError('Database operation failed', error, requestInfo, {
   operation: 'putItem',
   key,
   requestBody: event.body?.substring(0, 500),
-  pathParameters: event.pathParameters
+  pathParameters: event.pathParameters,
 });
 
 // Debug information (development only)
 logDebug('Processing parameters', requestInfo, {
   extractedParams: params,
-  validationResults: results
+  validationResults: results,
 });
 ```
 
@@ -425,3 +425,54 @@ We recommend using the following VS Code extensions for this project:
 ## CI/CD
 
 A CI pipeline using GitHub Actions is set up. Pushes to the master or main branch will automatically run tests to ensure code quality. Deployment is performed manually after tests have passed successfully.
+
+## Logging and Troubleshooting
+
+### API Key Authentication Errors
+
+When API key authentication fails, you'll receive one of the following responses:
+
+- **401 Unauthorized**: Missing API key in the request
+- **403 Forbidden**: Invalid or expired API key
+
+These errors are logged at the API Gateway level, and can be viewed in CloudWatch Logs under the API Gateway access logs.
+
+### TTL Configuration Errors
+
+TTL (Time-To-Live) configuration errors are logged at the Lambda function level:
+
+- Invalid TTL values in headers or query parameters will generate warnings
+- TTL values must be positive integers representing seconds
+- If no valid TTL is provided, the default TTL from environment variables will be used
+
+### Log Levels
+
+The service uses structured logging with the following levels:
+
+- **ERROR**: Critical errors requiring immediate attention
+- **WARN**: Warning conditions and validation failures
+- **INFO**: General operational information (minimal in production)
+- **DEBUG**: Detailed diagnostic information (development only)
+
+Log level can be controlled using the `LOG_LEVEL` environment variable. Default levels are:
+
+- Production: `WARN` and above
+- Development: `INFO` and above
+
+### Viewing Logs in Development
+
+During local development, logs are output to the console. In AWS, logs are sent to CloudWatch Logs where they can be viewed and analyzed.
+
+### Authentication Logging in Development
+
+In development mode, authentication information is logged for debugging purposes. The development environment includes additional flexibility for authentication handling:
+
+**Disabling Authentication in Development:**
+Set `DISABLE_AUTH_CHECK=true` in your `.env` file to disable authentication checks during local development. This is useful when testing the API without needing to provide API keys.
+
+**Environment-based Authentication Behavior:**
+- **Production/AWS Environment**: API Gateway handles authentication automatically
+- **Development Environment**: Custom authentication middleware validates API keys
+- **Test Environment**: Authentication is automatically disabled for unit tests
+
+**Note**: In production deployments, API Gateway handles all authentication automatically, and the development authentication middleware is bypassed.

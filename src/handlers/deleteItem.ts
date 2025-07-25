@@ -1,13 +1,21 @@
 import { APIGatewayEvent, Context, Callback } from 'aws-lambda';
 import { getRepository } from '@src/utils/repositoryFactory';
-import { extractRequestInfo, logError, logInfo, logWarn, logDebug } from '@src/utils/logger';
+import { extractRequestInfo, logError, logInfo, logWarn } from '@src/utils/logger';
+import { validateApiKeyForDevelopment } from '@src/utils/devAuthMiddleware';
 
 export const deleteItemHandler = async (
   event: APIGatewayEvent,
   _context: Context,
   _callback: Callback
 ) => {
+  // 開発環境でのAPI認証チェック（本番環境ではAPI Gatewayが自動で認証）
+  const authError = validateApiKeyForDevelopment(event);
+  if (authError) {
+    return authError;
+  }
+
   const requestInfo = extractRequestInfo(event);
+
   const key = event.pathParameters?.key;
 
   if (!key) {
@@ -22,8 +30,6 @@ export const deleteItemHandler = async (
   }
 
   try {
-    logDebug('Attempting to delete item from repository', requestInfo, { key });
-
     // リポジトリを取得してアイテムを削除
     const repository = await getRepository();
     await repository.deleteItem(key);

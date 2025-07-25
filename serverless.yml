@@ -41,9 +41,17 @@ provider:
   apiGateway:
     apiKeys:
       - KeyValueStoreApiKey
+  # API Gateway 異常時ログの設定
+  logs:
+    restApi:
+      accessLogging: false
+      executionLogging: true
+      level: ERROR
   environment:
     DEFAULT_TTL: ${env:DEFAULT_TTL, '86400'}
     TABLE_NAME: ${env:TABLE_NAME, 'KeyValueStore'}
+    LOG_LEVEL: ${env:LOG_LEVEL, 'INFO'}
+    DISABLE_AUTH_CHECK: ${env:DISABLE_AUTH_CHECK, 'true'}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -94,6 +102,80 @@ functions:
 
 resources:
   Resources:
+    # API Gateway のログ出力用 IAM ロール
+    ApiGatewayCloudWatchLogsRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - apigateway.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: ApiGatewayLogsPolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:DescribeLogGroups
+                    - logs:DescribeLogStreams
+                    - logs:PutLogEvents
+                    - logs:GetLogEvents
+                    - logs:FilterLogEvents
+                  Resource: '*'
+
+    # API Gateway アカウント設定
+    ApiGatewayAccount:
+      Type: AWS::ApiGateway::Account
+      Properties:
+        CloudWatchRoleArn:
+          Fn::GetAtt:
+            - ApiGatewayCloudWatchLogsRole
+            - Arn
+
+    # API Gateway レスポンスのカスタマイズ
+    ApiGatewayGatewayResponseMissingAuthenticationToken:
+      Type: AWS::ApiGateway::GatewayResponse
+      Properties:
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        ResponseType: MISSING_AUTHENTICATION_TOKEN
+        StatusCode: 401
+        ResponseTemplates:
+          text/plain: 'Missing API key. Please provide a valid x-api-key header.'
+        ResponseParameters:
+          gatewayresponse.header.Content-Type: "'text/plain'"
+
+    ApiGatewayGatewayResponseUnauthorized:
+      Type: AWS::ApiGateway::GatewayResponse
+      Properties:
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        ResponseType: UNAUTHORIZED
+        StatusCode: 403
+        ResponseTemplates:
+          text/plain: 'Invalid API key. Please provide a valid x-api-key header.'
+        ResponseParameters:
+          gatewayresponse.header.Content-Type: "'text/plain'"
+
+    ApiGatewayGatewayResponseAccessDenied:
+      Type: AWS::ApiGateway::GatewayResponse
+      Properties:
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        ResponseType: ACCESS_DENIED
+        StatusCode: 403
+        ResponseTemplates:
+          text/plain: 'Access denied. Please provide a valid x-api-key header.'
+        ResponseParameters:
+          gatewayresponse.header.Content-Type: "'text/plain'"
+
     DynamoDBTable:
       Type: AWS::DynamoDB::Table
       Properties:

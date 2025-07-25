@@ -100,16 +100,44 @@ You can retrieve your API key after deployment by running:
 npx serverless info
 ```
 
+**Authentication Error Responses:**
+
+Missing API key (401):
+```
+Missing API key. Please provide a valid x-api-key header.
+```
+
+Invalid/Empty API key (403):
+```
+Invalid API key. Please provide a valid x-api-key header.
+```
+
 ### Get Item
 
 ```
 GET /item/{key}
 ```
 
-Response: (Plain text)
+**Response Examples:**
 
+Success (200):
 ```
 your stored value
+```
+
+Item not found or expired (404):
+```
+Item not found
+```
+
+Bad request - missing key (400):
+```
+Key is required
+```
+
+Server error (500):
+```
+Error retrieving item
 ```
 
 ### Put Item
@@ -139,10 +167,31 @@ ttl=3600  // Optional: automatically delete after specified seconds
 
 Note: When both header and query parameter are provided, the header takes precedence.
 
-Response: (Plain text)
+**Response Examples:**
 
+Success (200):
 ```
 Item successfully saved
+```
+
+Bad request - missing key (400):
+```
+Key is required
+```
+
+Bad request - empty value (400):
+```
+Value is required in the request body
+```
+
+Bad request - invalid body (400):
+```
+Invalid request body
+```
+
+Server error (500):
+```
+Error saving item
 ```
 
 ### Extract and Store Code
@@ -177,10 +226,36 @@ Examples:
 - With `X-Character-Type: alphanumeric`, sending "Your activation code is ABC123" will extract and store "ABC123"
 - Using query parameters: `POST /extractCode/myKey?digits=5&characterType=alphanumeric`
 
-Response: (Plain text)
+**Response Examples:**
 
+Success (200):
 ```
 Code extracted and stored successfully: 123456
+```
+
+Bad request - missing key (400):
+```
+Key must be specified in the path
+```
+
+Bad request - empty body (400):
+```
+Request body cannot be empty
+```
+
+Bad request - invalid character type (400):
+```
+Invalid character type. Must be one of: 'numeric', 'alphanumeric'
+```
+
+Bad request - no code found (400):
+```
+No code matching the criteria found in the text (digits: 4, characterType: numeric)
+```
+
+Server error (500):
+```
+An error occurred while processing your request
 ```
 
 ### Delete Item
@@ -189,10 +264,21 @@ Code extracted and stored successfully: 123456
 DELETE /item/{key}
 ```
 
-Response: (Plain text)
+**Response Examples:**
 
+Success (200):
 ```
 Item successfully deleted
+```
+
+Bad request - missing key (400):
+```
+Key is required
+```
+
+Server error (500):
+```
+Error deleting item
 ```
 
 ## Custom Domain Setup
@@ -271,12 +357,14 @@ custom:
 
 This service can be configured using the following environment variables (see `.env.example` for reference):
 
-| Environment Variable | Description               | Default Value      |
-| -------------------- | ------------------------- | ------------------ |
-| `DEFAULT_TTL`        | Default TTL in seconds    | `86400` (24 hours) |
-| `DYNAMODB_TABLE`     | DynamoDB table name       | `KeyValueStore`    |
-| `AWS_REGION`         | AWS region for deployment | `ap-northeast-1`   |
-| `STAGE`              | Deployment stage          | `v1`               |
+| Environment Variable | Description                           | Default Value      |
+| -------------------- | ------------------------------------- | ------------------ |
+| `DEFAULT_TTL`        | Default TTL in seconds                | `86400` (24 hours) |
+| `DYNAMODB_TABLE`     | DynamoDB table name                   | `KeyValueStore`    |
+| `AWS_REGION`         | AWS region for deployment             | `ap-northeast-1`   |
+| `STAGE`              | Deployment stage                      | `v1`               |
+| `LOG_LEVEL`          | Logging level (ERROR/WARN/INFO/DEBUG) | `INFO`             |
+| `DISABLE_AUTH_CHECK` | Disable auth check in development     | `true`             |
 
 The `STAGE` environment variable is particularly important as it determines which environment (development, staging, production) your service will be deployed to. Each stage creates a completely separate set of resources in AWS.
 
