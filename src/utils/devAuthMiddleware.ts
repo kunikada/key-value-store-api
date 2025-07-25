@@ -48,7 +48,7 @@ export const validateApiKeyForDevelopment = (
     };
   }
 
-  const apiKeyValue = headers[apiKey];
+  const apiKeyValue = apiKey ? headers[apiKey] : undefined;
 
   // 開発環境用の簡単な認証チェック（空の場合のみエラー）
   if (!apiKeyValue || apiKeyValue.trim() === '') {
