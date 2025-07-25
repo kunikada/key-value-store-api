@@ -17,7 +17,7 @@ const createMockEvent = (headers: Record<string, string> = {}): Partial<APIGatew
       sourceIp: '127.0.0.1',
       userAgent: 'test-user-agent',
     },
-  } as any,
+  } as Partial<APIGatewayEvent['requestContext']>,
   httpMethod: 'GET',
   path: '/item/test-key',
   queryStringParameters: null,
