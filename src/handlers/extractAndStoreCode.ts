@@ -70,17 +70,60 @@ export const extractAndStoreCodeHandler = async (
 
   try {
     // リクエストボディからテキストを取得
-    const messageText = event.body;
+    let messageText: string | null = null;
+    const contentType = event.headers?.['content-type'] || event.headers?.['Content-Type'] || '';
 
-    if (!messageText) {
-      logWarn('Bad request: Empty request body', requestInfo);
-      return {
-        statusCode: 400,
-        headers: {
-          'Content-Type': 'text/plain',
-        },
-        body: 'Request body cannot be empty',
-      };
+    if (contentType.includes('application/json')) {
+      // JSON形式のリクエスト
+      if (!event.body) {
+        logWarn('Bad request: Empty request body', requestInfo);
+        return {
+          statusCode: 400,
+          headers: {
+            'Content-Type': 'text/plain',
+          },
+          body: 'Request body cannot be empty',
+        };
+      }
+
+      try {
+        const jsonBody = JSON.parse(event.body);
+        messageText = jsonBody.text;
+
+        if (!messageText) {
+          logWarn('Bad request: Missing or empty text field in JSON body', requestInfo);
+          return {
+            statusCode: 400,
+            headers: {
+              'Content-Type': 'text/plain',
+            },
+            body: 'The "text" field is required in the request body',
+          };
+        }
+      } catch (parseError) {
+        logWarn('Bad request: Invalid JSON in request body', requestInfo);
+        return {
+          statusCode: 400,
+          headers: {
+            'Content-Type': 'text/plain',
+          },
+          body: 'Invalid JSON format in request body',
+        };
+      }
+    } else {
+      // テキスト/プレーンテキスト形式のリクエスト
+      messageText = event.body;
+
+      if (!messageText) {
+        logWarn('Bad request: Empty request body', requestInfo);
+        return {
+          statusCode: 400,
+          headers: {
+            'Content-Type': 'text/plain',
+          },
+          body: 'Request body cannot be empty',
+        };
+      }
     }
 
     // URLパスからキーを取得

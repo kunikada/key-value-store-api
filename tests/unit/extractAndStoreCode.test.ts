@@ -301,4 +301,167 @@ describe('extractAndStoreCode handler', () => {
     expect(mockRepository.lastSavedItem?.key).toBe('test-key');
     expect(mockRepository.lastSavedItem?.value).toBe('1234');
   });
+
+  it('should extract and store code from JSON request body', async () => {
+    const event = {
+      pathParameters: {
+        key: 'test-key',
+      },
+      headers: {
+        'content-type': 'application/json',
+        'x-digits': '6',
+      },
+      body: JSON.stringify({
+        text: 'Your verification code is 123456. Please enter this code to continue.',
+      }),
+    };
+
+    const response = await extractAndStoreCodeHandler(event as any);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers).toEqual({ 'Content-Type': 'text/plain' });
+    expect(response.body).toBe('Code extracted and stored successfully: 123456');
+
+    // モックリポジトリに正しく保存されたか確認
+    expect(mockRepository.lastSavedItem).not.toBeNull();
+    expect(mockRepository.lastSavedItem?.key).toBe('test-key');
+    expect(mockRepository.lastSavedItem?.value).toBe('123456');
+  });
+
+  it('should return 400 when JSON request body has no text field', async () => {
+    const event = {
+      pathParameters: {
+        key: 'test-key',
+      },
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        code: '123456',
+      }),
+    };
+
+    const response = await extractAndStoreCodeHandler(event as any);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.headers).toEqual({ 'Content-Type': 'text/plain' });
+    expect(response.body).toBe('The "text" field is required in the request body');
+  });
+
+  it('should return 400 when JSON request body has empty text field', async () => {
+    const event = {
+      pathParameters: {
+        key: 'test-key',
+      },
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        text: '',
+      }),
+    };
+
+    const response = await extractAndStoreCodeHandler(event as any);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.headers).toEqual({ 'Content-Type': 'text/plain' });
+    expect(response.body).toBe('The "text" field is required in the request body');
+  });
+
+  it('should return 400 when JSON request body is invalid', async () => {
+    const event = {
+      pathParameters: {
+        key: 'test-key',
+      },
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: 'invalid json {',
+    };
+
+    const response = await extractAndStoreCodeHandler(event as any);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.headers).toEqual({ 'Content-Type': 'text/plain' });
+    expect(response.body).toBe('Invalid JSON format in request body');
+  });
+
+  it('should extract alphanumeric code from JSON request with headers parameters', async () => {
+    const event = {
+      pathParameters: {
+        key: 'test-key',
+      },
+      headers: {
+        'content-type': 'application/json',
+        'x-character-type': 'alphanumeric',
+        'x-digits': '6',
+      },
+      body: JSON.stringify({
+        text: 'Your activation code is ABC123. Please enter this code to continue.',
+      }),
+    };
+
+    const response = await extractAndStoreCodeHandler(event as any);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers).toEqual({ 'Content-Type': 'text/plain' });
+    expect(response.body).toBe('Code extracted and stored successfully: ABC123');
+
+    expect(mockRepository.lastSavedItem).not.toBeNull();
+    expect(mockRepository.lastSavedItem?.key).toBe('test-key');
+    expect(mockRepository.lastSavedItem?.value).toBe('ABC123');
+  });
+
+  it('should extract code from JSON request using query parameters', async () => {
+    const event = {
+      pathParameters: {
+        key: 'test-key',
+      },
+      queryStringParameters: {
+        digits: '6',
+        characterType: 'numeric',
+      },
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        text: 'Your verification code is 987654. Please enter this code to continue.',
+      }),
+    };
+
+    const response = await extractAndStoreCodeHandler(event as any);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers).toEqual({ 'Content-Type': 'text/plain' });
+    expect(response.body).toBe('Code extracted and stored successfully: 987654');
+
+    expect(mockRepository.lastSavedItem).not.toBeNull();
+    expect(mockRepository.lastSavedItem?.key).toBe('test-key');
+    expect(mockRepository.lastSavedItem?.value).toBe('987654');
+  });
+
+  it('should handle Content-Type header with charset', async () => {
+    const event = {
+      pathParameters: {
+        key: 'test-key',
+      },
+      headers: {
+        'content-type': 'application/json; charset=utf-8',
+        'x-digits': '6',
+      },
+      body: JSON.stringify({
+        text: 'Your verification code is 456789. Please enter this code to continue.',
+      }),
+    };
+
+    const response = await extractAndStoreCodeHandler(event as any);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers).toEqual({ 'Content-Type': 'text/plain' });
+    expect(response.body).toBe('Code extracted and stored successfully: 456789');
+
+    expect(mockRepository.lastSavedItem).not.toBeNull();
+    expect(mockRepository.lastSavedItem?.key).toBe('test-key');
+    expect(mockRepository.lastSavedItem?.value).toBe('456789');
+  });
 });

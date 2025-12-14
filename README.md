@@ -200,6 +200,10 @@ Error saving item
 POST /extractCode/{key}
 ```
 
+#### Request Formats
+
+**Format 1: Plain Text (text/plain)**
+
 Request body:
 
 ```
@@ -213,7 +217,33 @@ Content-Type: text/plain
 X-TTL-Seconds: 3600      // Optional: automatically delete after specified seconds
 X-Digits: 4              // Optional: minimum number of digits in code (default: 4)
 X-Character-Type: numeric // Optional: character type - 'numeric' or 'alphanumeric' (default: numeric)
-characterType=numeric // Optional: character type - 'numeric' or 'alphanumeric'
+```
+
+**Format 2: JSON (application/json)**
+
+Request body:
+
+```json
+{
+  "text": "TEXT DATA CONTAINING CODE"
+}
+```
+
+HTTP Headers:
+
+```
+Content-Type: application/json
+X-TTL-Seconds: 3600      // Optional: automatically delete after specified seconds
+X-Digits: 4              // Optional: minimum number of digits in code (default: 4)
+X-Character-Type: numeric // Optional: character type - 'numeric' or 'alphanumeric' (default: numeric)
+```
+
+#### Query Parameters (alternative to headers)
+
+Both request formats support query parameters:
+
+```
+?digits=5&characterType=alphanumeric&ttl=3600
 ```
 
 Note: When both headers and query parameters are provided, headers take precedence.
@@ -225,6 +255,7 @@ Examples:
 - With default settings (`X-Digits: 4` and `X-Character-Type: numeric`), sending "Your verification code is 123456" will extract and store "123456"
 - With `X-Character-Type: alphanumeric`, sending "Your activation code is ABC123" will extract and store "ABC123"
 - Using query parameters: `POST /extractCode/myKey?digits=5&characterType=alphanumeric`
+- Using JSON format: `POST /extractCode/myKey` with body `{"text":"Your verification code is 123456"}`
 
 **Response Examples:**
 
