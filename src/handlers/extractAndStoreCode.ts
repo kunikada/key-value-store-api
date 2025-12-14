@@ -100,7 +100,7 @@ export const extractAndStoreCodeHandler = async (
             body: 'The "text" field is required in the request body',
           };
         }
-      } catch {
+      } catch (_parseError) {
         logWarn('Bad request: Invalid JSON in request body', requestInfo);
         return {
           statusCode: 400,
