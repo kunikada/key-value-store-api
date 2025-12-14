@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Key-Value Store API
   description: A serverless REST API for a key-value store using AWS.
-  version: 1.1.3
+  version: 1.2.0
 servers:
   - url: https://api.example.com/dev
     description: 開発環境
@@ -167,6 +167,15 @@ paths:
           text/plain:
             schema:
               type: string
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                  description: コードを抽出するテキスト
       responses:
         '200':
           description: コードが正常に抽出され保存されました
