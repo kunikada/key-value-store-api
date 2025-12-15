@@ -103,11 +103,13 @@ npx serverless info
 **Authentication Error Responses:**
 
 Missing API key (401):
+
 ```
 Missing API key. Please provide a valid x-api-key header.
 ```
 
 Invalid/Empty API key (403):
+
 ```
 Invalid API key. Please provide a valid x-api-key header.
 ```
@@ -121,21 +123,25 @@ GET /item/{key}
 **Response Examples:**
 
 Success (200):
+
 ```
 your stored value
 ```
 
 Item not found or expired (404):
+
 ```
 Item not found
 ```
 
 Bad request - missing key (400):
+
 ```
 Key is required
 ```
 
 Server error (500):
+
 ```
 Error retrieving item
 ```
@@ -170,26 +176,31 @@ Note: When both header and query parameter are provided, the header takes preced
 **Response Examples:**
 
 Success (200):
+
 ```
 Item successfully saved
 ```
 
 Bad request - missing key (400):
+
 ```
 Key is required
 ```
 
 Bad request - empty value (400):
+
 ```
 Value is required in the request body
 ```
 
 Bad request - invalid body (400):
+
 ```
 Invalid request body
 ```
 
 Server error (500):
+
 ```
 Error saving item
 ```
@@ -238,6 +249,25 @@ X-Digits: 4              // Optional: minimum number of digits in code (default:
 X-Character-Type: numeric // Optional: character type - 'numeric' or 'alphanumeric' (default: numeric)
 ```
 
+**Format 3: URL Encoded (application/x-www-form-urlencoded)**
+
+Request body:
+
+```
+<URL ENCODED TEXT DATA CONTAINING CODE>
+```
+
+HTTP Headers:
+
+```
+Content-Type: application/x-www-form-urlencoded
+X-TTL-Seconds: 3600      // Optional: automatically delete after specified seconds
+X-Digits: 4              // Optional: minimum number of digits in code (default: 4)
+X-Character-Type: numeric // Optional: character type - 'numeric' or 'alphanumeric' (default: numeric)
+```
+
+Note: The body will be automatically URL-decoded and then processed as plain text.
+
 #### Query Parameters (alternative to headers)
 
 Both request formats support query parameters:
@@ -256,35 +286,42 @@ Examples:
 - With `X-Character-Type: alphanumeric`, sending "Your activation code is ABC123" will extract and store "ABC123"
 - Using query parameters: `POST /extractCode/myKey?digits=5&characterType=alphanumeric`
 - Using JSON format: `POST /extractCode/myKey` with body `{"text":"Your verification code is 123456"}`
+- Using URL-encoded format: `POST /extractCode/myKey` with `Content-Type: application/x-www-form-urlencoded` and body `Your%20verification%20code%20is%20123456`
 
 **Response Examples:**
 
 Success (200):
+
 ```
 Code extracted and stored successfully: 123456
 ```
 
 Bad request - missing key (400):
+
 ```
 Key must be specified in the path
 ```
 
 Bad request - empty body (400):
+
 ```
 Request body cannot be empty
 ```
 
 Bad request - invalid character type (400):
+
 ```
 Invalid character type. Must be one of: 'numeric', 'alphanumeric'
 ```
 
 Bad request - no code found (400):
+
 ```
 No code matching the criteria found in the text (digits: 4, characterType: numeric)
 ```
 
 Server error (500):
+
 ```
 An error occurred while processing your request
 ```
@@ -298,16 +335,19 @@ DELETE /item/{key}
 **Response Examples:**
 
 Success (200):
+
 ```
 Item successfully deleted
 ```
 
 Bad request - missing key (400):
+
 ```
 Key is required
 ```
 
 Server error (500):
+
 ```
 Error deleting item
 ```

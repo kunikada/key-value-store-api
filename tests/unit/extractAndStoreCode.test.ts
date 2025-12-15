@@ -464,4 +464,139 @@ describe('extractAndStoreCode handler', () => {
     expect(mockRepository.lastSavedItem?.key).toBe('test-key');
     expect(mockRepository.lastSavedItem?.value).toBe('456789');
   });
+
+  it('should extract and store code from URL-encoded request body', async () => {
+    const event = {
+      pathParameters: {
+        key: 'test-key',
+      },
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'x-digits': '6',
+      },
+      body: 'Your%20verification%20code%20is%20123456.%20Please%20enter%20this%20code%20to%20continue.',
+    };
+
+    const response = await extractAndStoreCodeHandler(event as any);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers).toEqual({ 'Content-Type': 'text/plain' });
+    expect(response.body).toBe('Code extracted and stored successfully: 123456');
+
+    // モックリポジトリに正しく保存されたか確認
+    expect(mockRepository.lastSavedItem).not.toBeNull();
+    expect(mockRepository.lastSavedItem?.key).toBe('test-key');
+    expect(mockRepository.lastSavedItem?.value).toBe('123456');
+  });
+
+  it('should extract alphanumeric code from URL-encoded request body', async () => {
+    const event = {
+      pathParameters: {
+        key: 'test-key',
+      },
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'x-character-type': 'alphanumeric',
+        'x-digits': '6',
+      },
+      body: 'Your%20activation%20code%20is%20ABC123.%20Please%20enter%20this%20code.',
+    };
+
+    const response = await extractAndStoreCodeHandler(event as any);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers).toEqual({ 'Content-Type': 'text/plain' });
+    expect(response.body).toBe('Code extracted and stored successfully: ABC123');
+
+    expect(mockRepository.lastSavedItem).not.toBeNull();
+    expect(mockRepository.lastSavedItem?.key).toBe('test-key');
+    expect(mockRepository.lastSavedItem?.value).toBe('ABC123');
+  });
+
+  it('should handle URL-encoded request with special characters', async () => {
+    const event = {
+      pathParameters: {
+        key: 'test-key',
+      },
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'x-digits': '4',
+      },
+      body: 'Code%3A%201234%20%28valid%20until%202025%29',
+    };
+
+    const response = await extractAndStoreCodeHandler(event as any);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers).toEqual({ 'Content-Type': 'text/plain' });
+    expect(response.body).toBe('Code extracted and stored successfully: 1234');
+
+    expect(mockRepository.lastSavedItem).not.toBeNull();
+    expect(mockRepository.lastSavedItem?.key).toBe('test-key');
+    expect(mockRepository.lastSavedItem?.value).toBe('1234');
+  });
+
+  it('should return 400 when URL-encoded request body is empty', async () => {
+    const event = {
+      pathParameters: {
+        key: 'test-key',
+      },
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: null,
+    };
+
+    const response = await extractAndStoreCodeHandler(event as any);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.headers).toEqual({ 'Content-Type': 'text/plain' });
+    expect(response.body).toBe('Request body cannot be empty');
+  });
+
+  it('should return 400 when no code found in URL-encoded request', async () => {
+    const event = {
+      pathParameters: {
+        key: 'test-key',
+      },
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: 'This%20text%20contains%20no%20code',
+    };
+
+    const response = await extractAndStoreCodeHandler(event as any);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.headers).toEqual({ 'Content-Type': 'text/plain' });
+    expect(response.body).toBe(
+      'No code matching the criteria found in the text (digits: 4, characterType: numeric)'
+    );
+  });
+
+  it('should extract code from URL-encoded request using query parameters', async () => {
+    const event = {
+      pathParameters: {
+        key: 'test-key',
+      },
+      queryStringParameters: {
+        digits: '5',
+        characterType: 'alphanumeric',
+      },
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: 'Your%20code%20is%20XYZ99%20and%20PIN%20is%201234',
+    };
+
+    const response = await extractAndStoreCodeHandler(event as any);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers).toEqual({ 'Content-Type': 'text/plain' });
+    expect(response.body).toBe('Code extracted and stored successfully: XYZ99');
+
+    expect(mockRepository.lastSavedItem).not.toBeNull();
+    expect(mockRepository.lastSavedItem?.key).toBe('test-key');
+    expect(mockRepository.lastSavedItem?.value).toBe('XYZ99');
+  });
 });

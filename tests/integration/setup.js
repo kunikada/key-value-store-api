@@ -75,8 +75,34 @@ export const startServer = () => {
           body += chunk.toString();
         });
         req.on('end', () => {
-          // 4桁以上の数字を抽出
-          const match = body.match(/\d{4,}/);
+          let processedBody = body;
+
+          // application/x-www-form-urlencoded の場合はURLデコード、その他でもデコードに成功すればデコード結果を使用
+          const contentType = req.headers['content-type'] || '';
+          if (contentType.includes('application/x-www-form-urlencoded')) {
+            processedBody = decodeURIComponent(body);
+          } else {
+            try {
+              processedBody = decodeURIComponent(body);
+            } catch {
+              // デコード不要または失敗時は元のボディを使用
+            }
+          }
+
+          // ヘッダーから抽出設定を取得（デフォルトは数字4桁以上）
+          const digitsHeader = req.headers['x-digits'];
+          const characterTypeHeader = req.headers['x-character-type'];
+          const digits = digitsHeader ? parseInt(String(digitsHeader), 10) : 4;
+          const characterType = characterTypeHeader || 'numeric';
+
+          // パターンを決定
+          let match = null;
+          if (characterType === 'alphanumeric') {
+            match = processedBody.match(new RegExp(`[A-Za-z0-9]{${digits},}`));
+          } else {
+            match = processedBody.match(new RegExp(`\\d{${digits},}`));
+          }
+
           if (match) {
             const code = match[0];
             mockItems.set(key, code); // 既に文字列なので問題ない
