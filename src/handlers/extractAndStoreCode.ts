@@ -110,6 +110,31 @@ export const extractAndStoreCodeHandler = async (
           body: 'Invalid JSON format in request body',
         };
       }
+    } else if (contentType.includes('application/x-www-form-urlencoded')) {
+      // URLエンコードされた形式のリクエスト
+      if (!event.body) {
+        logWarn('Bad request: Empty request body', requestInfo);
+        return {
+          statusCode: 400,
+          headers: {
+            'Content-Type': 'text/plain',
+          },
+          body: 'Request body cannot be empty',
+        };
+      }
+      // URLデコードして、プレーンテキストとして扱う
+      messageText = decodeURIComponent(event.body);
+
+      if (!messageText) {
+        logWarn('Bad request: Empty request body after decoding', requestInfo);
+        return {
+          statusCode: 400,
+          headers: {
+            'Content-Type': 'text/plain',
+          },
+          body: 'Request body cannot be empty',
+        };
+      }
     } else {
       // テキスト/プレーンテキスト形式のリクエスト
       messageText = event.body;

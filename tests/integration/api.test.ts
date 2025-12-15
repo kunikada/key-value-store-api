@@ -139,6 +139,70 @@ describe('Key-Value Store API - HTTP統合テスト', () => {
       expect(getResponse.status).toBe(200);
       expect(String(getResponse.data)).toBe('1234');
     });
+
+    it('URL-encodedフォーマットからコードを抽出する', async () => {
+      const key = generateUniqueKey();
+      const testMessage = '認証コードは 654321 です。このコードを入力してください。';
+      const encodedMessage = encodeURIComponent(testMessage);
+
+      const response = await apiClient.post(`/extractCode/${key}`, encodedMessage, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-TTL-Seconds': '3600',
+        },
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.data).toBe('Code extracted and stored successfully: 654321');
+
+      // 保存されたコードを取得して確認
+      const getResponse = await apiClient.get(`/item/${key}`);
+      expect(getResponse.status).toBe(200);
+      expect(String(getResponse.data)).toBe('654321');
+    });
+
+    it('URL-encodedフォーマットで特殊文字を含むテキストからコードを抽出する', async () => {
+      const key = generateUniqueKey();
+      const testMessage = 'コード: 5678 (有効期限: 2025年)';
+      const encodedMessage = encodeURIComponent(testMessage);
+
+      const response = await apiClient.post(`/extractCode/${key}`, encodedMessage, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Digits': '4',
+        },
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.data).toBe('Code extracted and stored successfully: 5678');
+
+      // 保存されたコードを取得して確認
+      const getResponse = await apiClient.get(`/item/${key}`);
+      expect(getResponse.status).toBe(200);
+      expect(String(getResponse.data)).toBe('5678');
+    });
+
+    it('URL-encodedフォーマットで英数字コードを抽出する', async () => {
+      const key = generateUniqueKey();
+      const testMessage = 'アクティベーションコードは XYZ789 です。';
+      const encodedMessage = encodeURIComponent(testMessage);
+
+      const response = await apiClient.post(`/extractCode/${key}`, encodedMessage, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Character-Type': 'alphanumeric',
+          'X-Digits': '6',
+        },
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.data).toBe('Code extracted and stored successfully: XYZ789');
+
+      // 保存されたコードを取得して確認
+      const getResponse = await apiClient.get(`/item/${key}`);
+      expect(getResponse.status).toBe(200);
+      expect(String(getResponse.data)).toBe('XYZ789');
+    });
   });
 
   describe('TTL機能', () => {

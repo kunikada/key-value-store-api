@@ -471,6 +471,7 @@ In development mode, authentication information is logged for debugging purposes
 Set `DISABLE_AUTH_CHECK=true` in your `.env` file to disable authentication checks during local development. This is useful when testing the API without needing to provide API keys.
 
 **Environment-based Authentication Behavior:**
+
 - **Production/AWS Environment**: API Gateway handles authentication automatically
 - **Development Environment**: Custom authentication middleware validates API keys
 - **Test Environment**: Authentication is automatically disabled for unit tests
